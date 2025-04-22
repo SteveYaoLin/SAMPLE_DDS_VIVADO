@@ -13,6 +13,7 @@ module uart_mult_byte_rx(
 	 output  reg [7:0] pack_num,                //接收到的字节数
 	 output  reg       recv_done,              //接收完一帧数据的接收和解码
 	 output  reg [7:0]  dataA,                 //解码后数据
+     output  reg [7:0]  dataD,                 //解码后数据
 	 output  reg [15:0] dataB,                 //解码后数据
      output  reg [15:0] dataC                  //解码后数据
     );
@@ -227,13 +228,15 @@ end
 always @(posedge sys_clk or posedge sys_rst_n) begin         
     if (sys_rst_n) begin                             
        dataA <= 8'd0; 
+       dataD <= 8'd0; 
 		 dataB <= 16'd0;
 		 dataC <=16'd0;
 		 recv_done <=1'b0;
     end  
 	 else if(packdone_flag) begin //数据接收完成，进行解码
-		 if(pack_num==DATA_NUM && pack_data[0]==8'h55 && pack_data[6]==8'h0d && pack_data[7]==8'h0a ) begin  //判断数据正误
+		 if(pack_num==DATA_NUM && pack_data[0]==8'h55 &&  pack_data[7]==8'h0a ) begin  //判断数据正误
 			 dataA <=pack_data[1];
+             dataD <=pack_data[6];
 			 dataB <= {pack_data[3],pack_data[2]};
 			 dataC <= {pack_data[5],pack_data[4]};
 			 recv_done <=1'b1;
@@ -242,6 +245,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
 			 dataA <= 8'd1; 
 			 dataB <= 16'd0;
 			 dataC <=16'd0;
+             dataD <= 8'd0;
 			 recv_done <=1'b0;
 		 end
 	 end
@@ -249,6 +253,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
 		 dataA <= dataA; 
 		 dataB <= dataB;
 		 dataC <=dataC;
+         dataD <= dataD;
 		 recv_done <=1'b0;
 	 end	 
 end

@@ -21,7 +21,8 @@ module uart_top_vlg_tst();
 	 wire [7:0] pack_num;
 	 
 	 wire        recv_done;
-	 wire [7:0]  dataA;               
+	 wire [7:0]  dataA;    
+	 wire [7:0]  dataD;           
 	 wire [15:0] dataB;            
 	 wire [15:0] dataC;
   
@@ -415,6 +416,7 @@ uart_mult_byte_rx #(
 	.pack_num    (pack_num),
 	.recv_done   (recv_done),
 	.dataA      (dataA),
+	.dataD      (dataD),
 	.dataB      (dataB),
 	.dataC      (dataC)		
   );  
