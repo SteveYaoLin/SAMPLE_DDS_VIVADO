@@ -23,6 +23,13 @@ module lhz_uart_led (
 );
 
 // First, declare the necessary signals
+wire clk_50M;
+wire clk_100M;
+wire clk_150M;
+wire clk_150M_O;
+wire locked;
+wire rst_n = sys_rst_n & locked; // Active low reset signal
+
 wire  [7:0] uart_data;
 wire uart_done;
 wire uart_get;
@@ -36,10 +43,25 @@ wire [7:0] dataD;
 wire [15:0] dataB;
 wire [15:0] dataC;
 
+//
+  clk_wiz_0 u_mcmm
+  (
+  // Clock out ports  
+  .clk_out1(clk_50M),
+  .clk_out2(clk_100M),
+  .clk_out3(clk_150M),
+  .clk_out4(clk_150M_O),
+  // Status and control signals               
+  .resetn(resetn), 
+  .locked(locked),
+ // Clock in ports
+  .clk_in1(sys_clk)
+  );
+
 // Then, instantiate the module with proper port connections
 uart_mult_byte_rx u_uart_rx_inst (
-    .sys_clk    (sys_clk),      // Connect to input clock
-    .sys_rst_n  (sys_rst_n),    // Connect to reset
+    .sys_clk    (clk_50M),      // Connect to input clock
+    .sys_rst_n  (rst_n  ),    // Connect to reset
     .uart_rxd   (uart_rxd),     // Connect to UART RX input
     
     .uart_data  (uart_data),    // Connect to internal signal
