@@ -76,6 +76,7 @@ $display("The first byte...");
 		#(BAUD_RATE_PERIOD/3);//为了显示
 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
 		#(BAUD_RATE_PERIOD*2/3);
+		#5000;
 		//命令行显示：串口信号线接收已结束，显示接收到的数据
 //一帧数据	
 $display("The second byte...");	

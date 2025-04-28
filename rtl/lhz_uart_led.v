@@ -28,6 +28,7 @@ wire clk_100M;
 wire clk_150M;
 wire clk_150M_O;
 wire locked;
+wire resetn;
 wire rst_n = sys_rst_n & locked; // Active low reset signal
 
 wire  [7:0] uart_data;
@@ -42,9 +43,10 @@ wire [7:0] dataA;
 wire [7:0] dataD;
 wire [15:0] dataB;
 wire [15:0] dataC;
-
+wire led_enable;
+wire led_breath;
 //
-  clk_wiz_0 u_mcmm
+  clk_wiz_0 u_mmcm
   (
   // Clock out ports  
   .clk_out1(clk_50M),
@@ -52,7 +54,7 @@ wire [15:0] dataC;
   .clk_out3(clk_150M),
   .clk_out4(clk_150M_O),
   // Status and control signals               
-  .resetn(resetn), 
+  .resetn(sys_rst_n), 
   .locked(locked),
  // Clock in ports
   .clk_in1(sys_clk)
@@ -61,7 +63,7 @@ wire [15:0] dataC;
 // Then, instantiate the module with proper port connections
 uart_mult_byte_rx u_uart_rx_inst (
     .sys_clk    (clk_50M),      // Connect to input clock
-    .sys_rst_n  (rst_n  ),    // Connect to reset
+    .sys_rst_n  (!rst_n  ),    // Connect to reset
     .uart_rxd   (uart_rxd),     // Connect to UART RX input
     
     .uart_data  (uart_data),    // Connect to internal signal
@@ -79,5 +81,11 @@ uart_mult_byte_rx u_uart_rx_inst (
     .dataB      (dataB),        // Connect to internal signal
     .dataC      (dataC)         // Connect to internal signal
 );
-assign led = (dataA == 8'h08) ? 1'b1 : 1'b0 ; // Example: drive LED with the least significant bit of received data
+//assign led_enable = (dataA == 8'h08) ? 1'b1 : 1'b0 ; // Example: drive LED with the least significant bit of received data
+breath_led u_breath_led(
+    .sys_clk       (clk_50M) ,      //
+    .sys_rst_n       (rst_n) ,    //
+    .led (led_breath )           //
+);
+assign led = (dataA == 8'h08) ? led_breath : 1'b0 ; // Example: drive LED with the least significant bit of received data
 endmodule
