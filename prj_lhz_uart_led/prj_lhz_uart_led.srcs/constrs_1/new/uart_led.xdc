@@ -8,3 +8,4 @@ set_property PACKAGE_PIN H15 [get_ports led]
 set_property IOSTANDARD LVCMOS33 [get_ports led]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_rxd]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_txd]
+
