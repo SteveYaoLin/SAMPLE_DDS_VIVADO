@@ -1,10 +1,11 @@
 `timescale 1ns/1ps
 
-module pwm_tb;
+module pattern_pwm_tb;
 
 reg        clk;
 reg        rst_n;
 reg        pwm_en;
+reg [7:0]  duty_num;
 reg [7:0]  PAT;
 wire       pwm_out;
 wire       busy;
@@ -15,6 +16,7 @@ pattern_pwm uut (
     .clk(clk),
     .rst_n(rst_n),
     .pwm_en(pwm_en),
+    .duty_num(duty_num),
     .PAT(PAT),
     .pwm_out(pwm_out),
     .busy(busy),
@@ -33,52 +35,45 @@ initial begin
     rst_n = 0;
     pwm_en = 0;
     PAT = 8'h00;
+    duty_num = 8'd0;
     #20;
     rst_n = 1;
     #10;
 
-    // 测试用例1：正常模式（PAT=8'b10101010）
+    // 测试用例1：单周期模式（duty_num=0）
+    duty_num = 8'd0;
     PAT = 8'b10101010;
-    #100;
     pwm_en = 1;
     #10;
     pwm_en = 0;
-    
-    // 等待当前PWM完成
     wait(valid);
     #50;
     
-    // 测试用例2：全1模式（PAT=8'b11111111）
-    PAT = 8'b11111111;
-    #100;
-    pwm_en = 1;
-    #10;
-    pwm_en = 0;
-    
-    // 等待当前PWM完成
-    wait(valid);
-    #50;
-    
-    // 测试用例3：连续触发测试
+    // 测试用例2：多周期模式（duty_num=5）
+    duty_num = 8'd1;
     PAT = 8'b11001100;
-    #100;
     pwm_en = 1;
     #10;
     pwm_en = 0;
-    #15;
-    // 在busy期间再次触发（应被忽略）
-    pwm_en = 1;
-    #10;
-    pwm_en = 0;
+    wait(valid);
+    #50;
     
-    #200;
+    // 测试用例3：最大周期测试（duty_num=255）
+    duty_num = 8'd2;
+    PAT = 8'b11111111;
+    pwm_en = 1;
+    #10;
+    pwm_en = 0;
+    wait(valid);
+    #50;
+    
     $finish;
 end
 
 // 波形记录
 initial begin
-    $dumpfile("pwm.vcd");
-    $dumpvars(0, pwm_tb);
+    $dumpfile("pattern_pwm.vcd");
+    $dumpvars(0, pattern_pwm_tb);
 end
 
 endmodule

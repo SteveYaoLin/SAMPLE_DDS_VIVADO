@@ -4,7 +4,7 @@ if {[file exists work]} {
 vlib work
 vmap work work
 vlog -work work +define+questasim +acc +fullpar tb_pattern_pwm.sv ../../rtl/*.v -l vlog.g
-vsim -c -l vsim.log +define+questasim -voptargs=+acc -fsmdebug work.pwm_tb
+vsim -c -l vsim.log +define+questasim -voptargs=+acc -fsmdebug work.pattern_pwm_tb
 
 # 1. 在运行 DO 文件后直接进行 2ms 的仿真
 run 20ms
