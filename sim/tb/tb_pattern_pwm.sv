@@ -53,9 +53,10 @@ initial begin
     #50;
     
     // 测试用例2：多周期模式（duty_num=5）
-    duty_num = 8'd1;
+    duty_num = 8'd0;
     // PAT = 8'b11001100;
-    PAT = 16'b1100110011001100;
+    // PAT = 16'b0011001100110011;
+    PAT = 16'b00;
     pwm_en = 1;
     #10;
     pwm_en = 0;
