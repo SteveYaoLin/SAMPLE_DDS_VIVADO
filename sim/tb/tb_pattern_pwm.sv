@@ -72,11 +72,23 @@ initial begin
     PAT = 16'b11111;
     pwm_en = 1;
     // #10 pwm_en = 0;
-    #500;
+    #2000;
     pwm_en = 0; // 产生下降沿
     // #10 pwm_en = 0;
     wait(valid);
-    
+
+    #200;
+      // 测试用例4：无限模式终止
+    duty_num = 8'd1;
+    pulse_dessert = 16'd1;
+    pulse_num = 8'd0;
+    PAT = 16'b1;
+    pwm_en = 1;
+    // #10 pwm_en = 0;
+    #2000;
+    pwm_en = 0; // 产生下降沿
+    // #10 pwm_en = 0;
+    wait(valid);
     #100;
     $finish;
 end

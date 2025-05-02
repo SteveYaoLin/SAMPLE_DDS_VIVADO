@@ -1,4 +1,4 @@
-// PWM Module with Multi-Pulse Control
+// PWM Module with Enhanced Asynchronous Control
 module pattern_pwm #(
     parameter _PAT_WIDTH = 8    // 模式寄存器宽度
 ) (
@@ -26,8 +26,9 @@ reg [7:0]   duty_cnt;          // 占空比计数器
 reg [15:0]  wait_cnt;          // 间隔计数器
 reg [7:0]   pulse_cnt;         // 脉冲计数器
 reg [7:0]   pat_bit;           // PAT最高位检测结果
-wire         en_fall;           // 使能下降沿检测
+reg         en_fall;           // 使能下降沿检测
 reg         last_pwm_en;       // 使能信号缓存
+reg         async_stop;        // 异步停止标志
 
 // PAT最高位检测逻辑
 integer i;
@@ -43,12 +44,22 @@ always @(*) begin
     end
 end
 
-// 使能下降沿检测
+// 使能下降沿检测和异步停止控制
 always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) last_pwm_en <= 1'b0;
-    else last_pwm_en <= pwm_en;
+    if (!rst_n) begin
+        last_pwm_en <= 1'b0;
+        async_stop <= 1'b0;
+    end
+    else begin
+        last_pwm_en <= pwm_en;
+        // 检测到下降沿且处于无限模式
+        if ((~pwm_en) & last_pwm_en & (pulse_num == 0)) 
+            async_stop <= 1'b1;
+        // 清除异步停止标志
+        if (state == FINISH)
+            async_stop <= 1'b0;
+    end
 end
-assign en_fall = (~pwm_en) & last_pwm_en;
 
 // 主控制逻辑
 always @(posedge clk or negedge rst_n) begin
@@ -63,7 +74,7 @@ always @(posedge clk or negedge rst_n) begin
         pulse_cnt  <= 8'd0;
     end
     else begin
-        valid <= 1'b0;  // valid信号默认低
+        valid <= 1'b0;  // 默认valid为低
 
         case(state)
             IDLE: begin
@@ -73,64 +84,83 @@ always @(posedge clk or negedge rst_n) begin
                     bit_cnt   <= 8'd0;
                     duty_cnt  <= 8'h00;
                     pulse_cnt <= 8'd0;
+                    pwm_out   <= PAT[0];
                 end
             end
             
             ACTIVE: begin
-                // PWM生成逻辑
-                if (duty_cnt < duty_num) begin
-                    duty_cnt <= duty_cnt + 1'b1;
+                // 优先处理异步停止
+                if (async_stop) begin
+                    state <= FINISH;
+                    valid <= 1'b1;
                 end
                 else begin
-                    duty_cnt <= 8'h00;
-                    if (bit_cnt < pat_bit) begin
-                        bit_cnt <= bit_cnt + 1'b1;
-                        pwm_out <= PAT[bit_cnt + 1];
+                    if (duty_cnt < duty_num) begin
+                        duty_cnt <= duty_cnt + 1'b1;
                     end
                     else begin
-                        // 完成一个脉冲
-                        pwm_out  <= 1'b0;
-                        bit_cnt  <= 8'd0;
-                        state    <= INTERVAL;
-                        wait_cnt <= 16'd0;
-                        // 更新脉冲计数
-                        if (pulse_num != 0) begin
-                            pulse_cnt <= pulse_cnt + 1'b1;
+                        duty_cnt <= 8'h00;
+                        if (bit_cnt < pat_bit) begin
+                            bit_cnt <= bit_cnt + 1'b1;
+                            pwm_out <= PAT[bit_cnt + 1];
+                        end
+                        else begin
+                            pwm_out  <= 1'b0;
+                            bit_cnt  <= 8'd0;
+                            state    <= INTERVAL;
+                            wait_cnt <= 16'd0;
+                            // 更新脉冲计数（有限模式）
+                            if (pulse_num != 0) begin
+                                pulse_cnt <= pulse_cnt + 1'b1;
+                            end
                         end
                     end
                 end
             end
             
             INTERVAL: begin
-                if (wait_cnt < pulse_dessert) begin
-                    wait_cnt <= wait_cnt + 1'b1;
+                // 优先处理异步停止
+                if (async_stop) begin
+                    state <= FINISH;
+                    valid <= 1'b1;
                 end
                 else begin
-                    // 检查脉冲次数
-                    if ((pulse_num !=0 && pulse_cnt >= pulse_num) || 
-                        (pulse_num ==0 && en_fall)) begin
-                        state <= FINISH;
-                        valid <= 1'b1;
+                    if (wait_cnt < pulse_dessert) begin
+                        wait_cnt <= wait_cnt + 1'b1;
                     end
                     else begin
-                        state <= ACTIVE;
-                        pwm_out <= PAT[0];
+                        // 检查终止条件
+                        if ((pulse_num !=0 && pulse_cnt >= pulse_num) || 
+                            (pulse_num ==0 && async_stop)) begin
+                            state <= FINISH;
+                            valid <= 1'b1;
+                        end
+                        else begin
+                            state <= ACTIVE;
+                            pwm_out <= PAT[0];
+                        end
+                        wait_cnt <= 16'd0;
                     end
-                    wait_cnt <= 16'd0;
                 end
             end
             
             FINISH: begin
                 busy  <= 1'b0;
+                valid <= 1'b1;
                 state <= IDLE;
+                pwm_out <= 1'b0;
+                // 清除所有工作状态
+                bit_cnt   <= 8'd0;
+                duty_cnt  <= 8'h00;
+                wait_cnt  <= 16'd0;
+                pulse_cnt <= 8'd0;
             end
         endcase
-        
-        // 异步终止处理
-        if (en_fall && pulse_num ==0) begin
-            // 无限模式下的终止
-            // if (state == INTERVAL) 
+
+        // 强制终止处理（所有状态）
+        if (async_stop && state != FINISH) begin
             state <= FINISH;
+            valid <= 1'b1;
         end
     end
 end
