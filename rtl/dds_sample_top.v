@@ -22,7 +22,7 @@ module dds_sample_top (
     // output reg [15:0] dataC       // Data C output
 );
 
-parameter _PAT_WIDTH = 16 ;   // 模式寄存器宽�??
+parameter _PAT_WIDTH = 16 ;   // 模式寄存器宽�???
 // First, declare the necessary signals
 wire clk_50M;
 wire clk_100M;
@@ -94,60 +94,60 @@ assign led = (dataA == 8'h08) ? led_breath : 1'b0 ; // Example: drive LED with t
 wire [1:0] pwm_out;
 wire pwm_oddr;
 pattern_pwm #(
-    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??
+    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�???
 ) pwm1 (
 /*input                 */ .clk(clk_50M),
-/*input                 */ .rst_n(rst_n),        // 异步复位（低有效�??
+/*input                 */ .rst_n(rst_n),        // 异步复位（低有效�???
 /*input                 */ .pwm_en(1'b1),       // 使能信号
 /*input [7:0]           */ .duty_num(8'b1),     // 占空比周期数
-/*input [15:0]          */ .pulse_dessert(8'b1),// 脉冲间隔周期�??
-/*input [7:0]           */ .pulse_num(8'h0),    // 脉冲次数�??0=无限�??
-/*input [_PAT_WIDTH-1:0]*/ .PAT(16'h1), // 模式寄存�??
+/*input [15:0]          */ .pulse_dessert(8'b1),// 脉冲间隔周期�???
+/*input [7:0]           */ .pulse_num(8'h0),    // 脉冲次数�???0=无限�???
+/*input [_PAT_WIDTH-1:0]*/ .PAT(16'h1), // 模式寄存�???
 /*output reg            */ .pwm_out(pwm_out[0]),      // PWM输出
-/*output reg            */ .busy(pwm_busy),         // 忙信�??
+/*output reg            */ .busy(pwm_busy),         // 忙信�???
 /*output reg            */ .valid()         // PWM结束标志
 );
 
-// ODDR #(
-//     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 时钟双沿采样模式
-//     .INIT(1'b0),                     // 初始化�??
-//     .SRTYPE("SYNC")                  // 同步复位类型
-// ) ODDR_inst (
-//     .Q(pwm_oddr),    // 输出到IO的PWM信号
-//     .C(clk_50m),     // 50MHz时钟输入（需与PWM逻辑同步�??
-//     .CE(1'b1),       // 始终使能
-//     .D1(pwm_out[0]),  // 内部生成的PWM逻辑（高电平�??
-//     .D2(pwm_out[0]),  // 与D1相同，确保单沿输�??
-//     .R(1'b0),        // 无复�??
-//     .S(1'b0)         // 无置�??
-// );
+//ODDR #(
+//    .DDR_CLK_EDGE("SAME_EDGE"),  // 时钟双沿采样模式
+//    .INIT(1'b0),                     // 初始化�??
+//    .SRTYPE("SYNC")                  // 同步复位类型
+//) ODDR_inst (
+//    .Q(pwm_port),    // 输出到IO的PWM信号
+//    .C(clk_50m),     // 50MHz时钟输入（需与PWM逻辑同步�???
+//    .CE(1'b1),       // 始终使能
+//    .D1(pwm_out[0]),  // 内部生成的PWM逻辑（高电平�???
+//    .D2(1'b0),  // 与D1相同，确保单沿输�???
+//    .R(~rst_n),        // 无复�???
+//    .S(1'b0)         // 无置�???
+//);
 
-// OBUF #(
-//     .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
-//     .IOSTANDARD("LVCMOS33"), // I/O电平标准
-//     .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�??
-// ) OBUF_inst (
-//     .O(pwm_port),      // 实际引脚（B35_L19_P�??
-//     .I(pwm_oddr)      // 来自ODDR的输�??
-// );
+OBUF #(
+    .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
+    .IOSTANDARD("LVCMOS33"), // I/O电平标准
+    .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�???
+) OBUF_inst (
+    .O(pwm_port),      // 实际引脚（B35_L19_P�???
+    .I(pwm_out[0])      // 来自ODDR的输�???
+);
 
 pattern_pwm #(
-    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??
+    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�???
 ) pwm2 (
 /*input                 */ .clk(clk_50M),
-/*input                 */ .rst_n(rst_n),        // 异步复位（低有效�??
+/*input                 */ .rst_n(rst_n),        // 异步复位（低有效�???
 /*input                 */ .pwm_en(1'b1),       // 使能信号
 /*input [7:0]           */ .duty_num(8'b1),     // 占空比周期数
-/*input [15:0]          */ .pulse_dessert(8'b1),// 脉冲间隔周期�??
-/*input [7:0]           */ .pulse_num(8'h0),    // 脉冲次数�??0=无限�??
-/*input [_PAT_WIDTH-1:0]*/ .PAT(16'h1), // 模式寄存�??
+/*input [15:0]          */ .pulse_dessert(8'b1),// 脉冲间隔周期�???
+/*input [7:0]           */ .pulse_num(8'h0),    // 脉冲次数�???0=无限�???
+/*input [_PAT_WIDTH-1:0]*/ .PAT(16'h1), // 模式寄存�???
 /*output reg            */ .pwm_out(pwm_out[1]),      // PWM输出
-/*output reg            */ .busy(),         // 忙信�??
+/*output reg            */ .busy(),         // 忙信�???
 /*output reg            */ .valid()         // PWM结束标志
 );
-assign pwm_port = pwm_out[0] ; // 直接连接到引脚
-//  ila_0 u_ila_0(
-//  .clk	(sys_clk),
-//  .probe0	({pwm_busy,pwm_out[0]})
-//  );
+// assign pwm_port = pwm_out[0] ; // 直接连接到引�?
+// ila_0 u_ila_0(
+// .clk	(sys_clk),
+// .probe0	({pwm_busy,pwm_oddr})
+// );
 endmodule
