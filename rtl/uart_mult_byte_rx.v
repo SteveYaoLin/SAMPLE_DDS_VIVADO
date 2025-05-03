@@ -18,7 +18,7 @@ module uart_mult_byte_rx(
      output  reg [15:0] dataC                  //解码后数�?
     );
     
-localparam  DATA_NUM = 8;
+localparam  DATA_NUM = 14;
 integer j;
 
 reg [7:0] pack_data [DATA_NUM-1:0];           //接收的数�?
@@ -234,15 +234,17 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
 		 recv_done <=1'b0;
     end  
 	 else if(packdone_flag) begin //数据接收完成，进行解�?
-		 if(pack_num==DATA_NUM && pack_data[0]==8'h55 &&  pack_data[7]==8'h0a ) begin  //判断数据正误
+		 if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa)) begin  //判断数据正误
 			 dataA <=pack_data[1];
              dataD <=pack_data[6];
-			 dataB <= {pack_data[3],pack_data[2]};
-			 dataC <= {pack_data[5],pack_data[4]};
+            // $display("update reg!\n");	
+            //  dataD <=pack_data[1];
+			 dataB <= {8'h0b,pack_data[2]};
+			 dataC <= {pack_data[12],pack_data[11]};
 			 recv_done <=1'b1;
 		 end  
 		 else begin //数据错误
-			 dataA <= 8'd1; 
+			 dataA <= 8'd0; 
 			 dataB <= 16'd0;
 			 dataC <=16'd0;
              dataD <= 8'd0;

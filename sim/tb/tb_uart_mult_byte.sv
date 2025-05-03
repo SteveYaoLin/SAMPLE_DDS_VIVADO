@@ -30,7 +30,7 @@ module uart_top_vlg_tst();
 	parameter SYS_CLK_FRE = 50_000_000;     //系统频率50MHz  40_000_000
 	parameter SYS_CLK_PERIOD = 1_000_000_000/SYS_CLK_FRE;  //周期20ns
 	//波特率参数
-  	parameter BAUD_RATE = 230400; 	//串口波特率
+  	parameter BAUD_RATE = 115200; 	//串口波特率
 	parameter BAUD_RATE_PERIOD	= 1_000_000_000/BAUD_RATE;
 
 //==========================================================================
@@ -41,6 +41,25 @@ module uart_top_vlg_tst();
 	//模拟系统时钟:40MHz，25ns
 //	always #((SYS_CLK_PERIOD+1)/2-1) sim_clk = ~sim_clk; //延时，电平翻转
 	
+	// UART数据发送任务
+task uart_send_byte;
+    input [7:0] data;
+    integer i;
+    begin
+        // 起始位
+        uart_rxd = 0;
+        #BAUD_RATE_PERIOD;
+        // 数据位（LSB first）
+        for (i=0; i<8; i=i+1) begin
+            uart_rxd = data[i];
+            #BAUD_RATE_PERIOD;
+        end
+        // 停止位
+        uart_rxd = 1;
+        #BAUD_RATE_PERIOD;
+    end
+endtask
+
 	initial	begin
 		//模拟复位信号：一次，低电平5个clk
 		#0;
@@ -53,345 +72,382 @@ module uart_top_vlg_tst();
 		//模拟串口接收：串行信号输入，转化成并行数据，并显示
 		//==========================================================================			
 		uart_rxd = 1'b1;	   //串口发送线，默认拉高
-		#BAUD_RATE_PERIOD; 						//直接延时，一个波特率周期
-		$display("Initialization complete. BAUD_RATE is %d",BAUD_RATE); //命令行显示初始化完成，输出BPS_NUM
 		
-//一帧数据		
-$display("The first byte...");
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h55=8'b0101_0101
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 		
-		$display("The uart_rxd 8'h55=8'b0101_0101 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		#5000;
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-//一帧数据	
-$display("The second byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h12=8'b0001_0010
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
-		$display("The uart_rxd 8'h12=8'b0001_0010 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-//一帧数据	
-$display("The third byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h13=8'b0001_0011
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
-		$display("The uart_rxd 8'h13=8'b0001_0011 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-$display("The 4 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h14=8'b0001_0100
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
-		$display("The uart_rxd 8'h14=8'b0001_0100 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据	
-$display("The 5 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h15=8'b0001_0101
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
-		$display("The uart_rxd 8'h15=8'b0001_0101 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据	
+		$display("Initialization complete. BAUD_RATE is %d",BAUD_RATE); //命令行显示初始化完成，输出BPS_NUM
+		#BAUD_RATE_PERIOD; 						//直接延时，一个波特率周期
+	$display("Sending configuration data...");	
+    uart_send_byte(8'h55);  // 假设包头
+    uart_send_byte(8'h01);  // dataA
+    uart_send_byte(8'h02);  // dataD
+    uart_send_byte(8'h03);  // dataB[7:0]
+    uart_send_byte(8'h04);  // dataB[15:8]
+    uart_send_byte(8'h05);  // dataC[7:0]
+    uart_send_byte(8'h06);  // dataC[15:8]
+	uart_send_byte(8'h07);  // 假设包头
+    uart_send_byte(8'h08);  // dataA
+    uart_send_byte(8'h09);  // dataD
+    uart_send_byte(8'h0a);  // dataB[7:0]
+    uart_send_byte(8'h0b);  // dataB[15:8]
+    uart_send_byte(8'h0c);  // dataC[7:0]
+    uart_send_byte(8'haa);  // 假设包尾
+	#BAUD_RATE_PERIOD ;
+	uart_rxd = 1'b1;	   //串口发送线，默认拉高
+	#(BAUD_RATE_PERIOD * 5) ; 	
+	$display("The second package...");	
+	uart_send_byte(8'h55);  // 假设包头
+    uart_send_byte(8'h11);  // dataA
+    uart_send_byte(8'h12);  // dataD
+    uart_send_byte(8'h13);  // dataB[7:0]
+    uart_send_byte(8'h14);  // dataB[15:8]
+    uart_send_byte(8'h15);  // dataC[7:0]
+    uart_send_byte(8'h16);  // dataC[15:8]
+	uart_send_byte(8'h17);  // 假设包头
+    uart_send_byte(8'h18);  // dataA
+    uart_send_byte(8'h19);  // dataD
+    uart_send_byte(8'h1a);  // dataB[7:0]
+    uart_send_byte(8'h1b);  // dataB[15:8]
+    uart_send_byte(8'h1c);  // dataC[7:0]
+    uart_send_byte(8'hAA );  // 假设包尾	
+	#BAUD_RATE_PERIOD ;
+	uart_rxd = 1'b1;	   //串口发送线，默认拉高
+	#(BAUD_RATE_PERIOD * 5) ; 	
+	$stop;		//结束仿真
+// //一帧数据		
+// $display("The first byte...");
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h55=8'b0101_0101
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 		
+// 		$display("The uart_rxd 8'h55=8'b0101_0101 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		#5000;
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// //一帧数据	
+// $display("The second byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h12=8'b0001_0010
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
+// 		$display("The uart_rxd 8'h12=8'b0001_0010 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// //一帧数据	
+// $display("The third byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h13=8'b0001_0011
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
+// 		$display("The uart_rxd 8'h13=8'b0001_0011 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 4 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h14=8'b0001_0100
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
+// 		$display("The uart_rxd 8'h14=8'b0001_0100 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据	
+// $display("The 5 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h15=8'b0001_0101
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
+// 		$display("The uart_rxd 8'h15=8'b0001_0101 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据	
 
-$display("The 6 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h16=8'b0001_0110
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
-		$display("The uart_rxd 8'h16=8'b0001_0110 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-$display("The 7 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h0d=8'b0000_1101
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 		
-		$display("The uart_rxd 8'h0d=8'b0000_1101 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-$display("The 8 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h0a=8'b0000_1010
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;		   	#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;	   		#BAUD_RATE_PERIOD; 		
-		$display("The uart_rxd 8'h0a=8'b0000_1010 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 6 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h16=8'b0001_0110
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
+// 		$display("The uart_rxd 8'h16=8'b0001_0110 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 7 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h0d=8'b0000_1101
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 		
+// 		$display("The uart_rxd 8'h0d=8'b0000_1101 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 8 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h0a=8'b0000_1010
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;		   	#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;	   		#BAUD_RATE_PERIOD; 		
+// 		$display("The uart_rxd 8'h0a=8'b0000_1010 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+		// 	uart_rxd = 1'b1;	
+		// #(BAUD_RATE_PERIOD/3);//为了显示
+		// 	$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+		// #(BAUD_RATE_PERIOD*2/3);
+		// //命令行显示：串口信号线接收已结束，显示接收到的数据
 			
 //------------------第二包数据------------------------//
-$display("The second package...");			
-//一帧数据		
-$display("The first byte...");
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h55=8'b0101_0101
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 		
-		$display("The uart_rxd 8'h55=8'b0101_0101 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-//一帧数据	
-$display("The second byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h32=8'b0011_0010
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
-		$display("The uart_rxd 8'h32=8'b0011_0010 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-//一帧数据	
-$display("The third byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h33=8'b0011_0011
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
-		$display("The uart_rxd 8'h33=8'b0011_0011 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-$display("The 4 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h34=8'b0011_0100
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
-		$display("The uart_rxd 8'h34=8'b0011_0100 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据	
-$display("The 5 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h35=8'b0001_0101
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
-		$display("The uart_rxd 8'h35=8'b0011_0101 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据	
+		
+// //一帧数据		
+// $display("The first byte...");
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h55=8'b0101_0101
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 		
+// 		$display("The uart_rxd 8'h55=8'b0101_0101 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// //一帧数据	
+// $display("The second byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h32=8'b0011_0010
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
+// 		$display("The uart_rxd 8'h32=8'b0011_0010 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// //一帧数据	
+// $display("The third byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h33=8'b0011_0011
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
+// 		$display("The uart_rxd 8'h33=8'b0011_0011 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 4 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h34=8'b0011_0100
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 
+// 		$display("The uart_rxd 8'h34=8'b0011_0100 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据	
+// $display("The 5 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h35=8'b0001_0101
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
+// 		$display("The uart_rxd 8'h35=8'b0011_0101 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据	
 
-$display("The 6 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h36=8'b0001_0110
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
-		$display("The uart_rxd 8'h36=8'b0011_0110 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-$display("The 7 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h0d=8'b0000_1101
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 		
-		$display("The uart_rxd 8'h0d=8'b0000_1101 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
-$display("The 8 byte...");	
-		//发送数据----起始位
-			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
-		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
-		//测试数据为8'h0a=8'b0000_1010
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
-			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;		   	#BAUD_RATE_PERIOD; 
-			uart_rxd = 1'b0;	   		#BAUD_RATE_PERIOD; 		
-		$display("The uart_rxd 8'h0a=8'b0000_1010 has been sent.");  //命令行显示：串口信号线数据已发送
-		//发送数据----停止位
-			uart_rxd = 1'b1;	
-		#(BAUD_RATE_PERIOD/3);//为了显示
-			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
-		#(BAUD_RATE_PERIOD*2/3);
-		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 6 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h36=8'b0001_0110
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;     		#BAUD_RATE_PERIOD; 	
+// 		$display("The uart_rxd 8'h36=8'b0011_0110 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 7 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h0d=8'b0000_1101
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b1;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;			   #BAUD_RATE_PERIOD; 		
+// 		$display("The uart_rxd 8'h0d=8'b0000_1101 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
+// $display("The 8 byte...");	
+// 		//发送数据----起始位
+// 			uart_rxd = 1'b0;			#BAUD_RATE_PERIOD;	
+// 		//串行数据，一位一位送入接收信号线：***从位0到位7***，依次发送
+// 		//测试数据为8'h0a=8'b0000_1010
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 		
+// 			uart_rxd = 1'b1;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;				#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;		   	#BAUD_RATE_PERIOD; 
+// 			uart_rxd = 1'b0;	   		#BAUD_RATE_PERIOD; 		
+// 		$display("The uart_rxd 8'h0a=8'b0000_1010 has been sent.");  //命令行显示：串口信号线数据已发送
+// 		//发送数据----停止位
+// 			uart_rxd = 1'b1;	
+// 		#(BAUD_RATE_PERIOD/3);//为了显示
+// 			$display("The uart_rxd has received. rx_data = 8'h%h",rx_data);  
+// 		#(BAUD_RATE_PERIOD*2/3);
+// 		//命令行显示：串口信号线接收已结束，显示接收到的数据
 
-	   #BAUD_RATE_PERIOD;
-		#BAUD_RATE_PERIOD;
-		$stop;		//结束仿真
+	//    #BAUD_RATE_PERIOD;
+	// 	#BAUD_RATE_PERIOD;
+		
 		
 	end
 
