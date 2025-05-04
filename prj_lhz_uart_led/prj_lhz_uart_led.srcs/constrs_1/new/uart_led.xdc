@@ -20,7 +20,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports pwm_port]
 
 # 创建一个新的时序约束
 create_clock -period 20.000 -name sys_clk [get_ports sys_clk]
-create_clock -period 20.000 -name clk_50M [get_ports clk_50M]
+#create_clock -period 20.000 -name clk_50M [get_ports clk_50M]
 set_property PACKAGE_PIN H15 [get_ports pwm_port]
 
 set_property IOSTANDARD LVCMOS33 [get_ports ad9748_sleep]

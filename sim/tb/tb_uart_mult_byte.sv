@@ -93,9 +93,27 @@ endtask
 	#BAUD_RATE_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
 	#(BAUD_RATE_PERIOD * 5) ; 	
+	$display("The 1st package...");	
+	uart_send_byte(8'h55);  // 假设包头
+    uart_send_byte(8'h02);  // dataA
+    uart_send_byte(8'h22);  // dataD
+    uart_send_byte(8'h23);  // dataB[7:0]
+    uart_send_byte(8'h24);  // dataB[15:8]
+    uart_send_byte(8'h25);  // dataC[7:0]
+    uart_send_byte(8'h26);  // dataC[15:8]
+	uart_send_byte(8'h27);  // 假设包头
+    uart_send_byte(8'h28);  // dataA
+    uart_send_byte(8'h29);  // dataD
+    uart_send_byte(8'h2a);  // dataB[7:0]
+    uart_send_byte(8'h2b);  // dataB[15:8]
+    uart_send_byte(8'h2c);  // dataC[7:0]
+    uart_send_byte(8'hA0 );  // 假设包尾	
+	#BAUD_RATE_PERIOD ;
+	uart_rxd = 1'b1;	   //串口发送线，默认拉高
+	#(BAUD_RATE_PERIOD * 5) ; 
 	$display("The second package...");	
 	uart_send_byte(8'h55);  // 假设包头
-    uart_send_byte(8'h11);  // dataA
+    uart_send_byte(8'h02);  // dataA
     uart_send_byte(8'h12);  // dataD
     uart_send_byte(8'h13);  // dataB[7:0]
     uart_send_byte(8'h14);  // dataB[15:8]
@@ -111,6 +129,24 @@ endtask
 	#BAUD_RATE_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
 	#(BAUD_RATE_PERIOD * 5) ; 	
+	$display("The 3rd package...");	
+	uart_send_byte(8'h55);  // 假设包头
+    uart_send_byte(8'h01);  // dataA
+    uart_send_byte(8'h22);  // dataD
+    uart_send_byte(8'h23);  // dataB[7:0]
+    uart_send_byte(8'h24);  // dataB[15:8]
+    uart_send_byte(8'h25);  // dataC[7:0]
+    uart_send_byte(8'h26);  // dataC[15:8]
+	uart_send_byte(8'h27);  // 假设包头
+    uart_send_byte(8'h28);  // dataA
+    uart_send_byte(8'h29);  // dataD
+    uart_send_byte(8'h2a);  // dataB[7:0]
+    uart_send_byte(8'h2b);  // dataB[15:8]
+    uart_send_byte(8'h2c);  // dataC[7:0]
+    uart_send_byte(8'hAA );  // 假设包尾	
+	#BAUD_RATE_PERIOD ;
+	uart_rxd = 1'b1;	   //串口发送线，默认拉高
+	#(BAUD_RATE_PERIOD * 5) ; 
 	$stop;		//结束仿真
 // //一帧数据		
 // $display("The first byte...");
@@ -472,10 +508,14 @@ uart_mult_byte_rx #(
 	.pack_ing    (pack_ing),
 	.pack_num    (pack_num),
 	.recv_done   (recv_done),
-	.dataA      (dataA),
-	.dataD      (dataD),
-	.dataB      (dataB),
-	.dataC      (dataC)		
+	.hs_pwm_ch    (),
+	.hs_ctrl_sta  (),
+	.duty_num     (),
+	.pulse_dessert(),
+	.pulse_num    (),
+	.PAT          (),
+	.ls_pwm_ch    (),
+	.ls_ctrl_sta  ()
   );  
 
 endmodule

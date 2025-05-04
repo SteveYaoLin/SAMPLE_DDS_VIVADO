@@ -12,10 +12,15 @@ module uart_mult_byte_rx(
 	 output  reg       pack_done,               //帧接收完成标志位
 	 output  reg [7:0] pack_num,                //接收到的字节�?
 	 output  reg       recv_done,              //接收完一帧数据的接收和解�?
-	 output  reg [7:0]  dataA,                 //解码后数�?
-     output  reg [7:0]  dataD,                 //解码后数�?
-	 output  reg [15:0] dataB,                 //解码后数�?
-     output  reg [15:0] dataC                  //解码后数�?
+
+     output  reg [7:0]     hs_pwm_ch        ,   
+     output  reg [7:0]     hs_ctrl_sta      ,  
+     output  reg [7:0]     duty_num         , 
+     output  reg [16:0]    pulse_dessert    , 
+     output  reg [7:0]     pulse_num        , 
+     output  reg [31:0]    PAT              , 
+     output  reg [7:0]     ls_pwm_ch        , 
+     output  reg [7:0]     ls_ctrl_sta     
     );
     
 localparam  DATA_NUM = 14;
@@ -47,7 +52,7 @@ reg   uart_done_d1;
 wire  packdone_flag;
 reg   pack_done_d0;
 reg   pack_done_d1;
-
+reg [7:0] reg_func;                            //接收数据包功能号
 //*****************************************************
 //**                    main code
 //*****************************************************
@@ -227,43 +232,83 @@ end
 
 always @(posedge sys_clk or posedge sys_rst_n) begin         
     if (sys_rst_n) begin                             
-       dataA <= 8'd0; 
-       dataD <= 8'd0; 
-		 dataB <= 16'd0;
-		 dataC <=16'd0;
-		 recv_done <=1'b0;
+        reg_func <= 8'd0; 
+	    recv_done <=1'b0;
+        hs_pwm_ch       <= 8'd0;   
+        hs_ctrl_sta     <= 8'd0;
+        duty_num        <= 8'd0;
+        pulse_dessert   <= 16'd0;
+        pulse_num       <= 8'd0;
+        PAT             <= 32'd0;
+        ls_pwm_ch       <= 8'd0;
+        ls_ctrl_sta     <= 8'd0;
     end  
 	 else if(packdone_flag) begin //数据接收完成，进行解�?
 		 if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa)) begin  //判断数据正误
-			 dataA <=pack_data[1];
-             dataD <=pack_data[6];
-            // $display("update reg!\n");	
+			 reg_func  <=pack_data[1];
+             recv_done <=1'b1;
+            case (pack_data[1]) //解码数据
+                8'h01 : begin
+                    hs_pwm_ch       <= pack_data[2]; //数据包1
+                    hs_ctrl_sta     <= pack_data[3]; //数据包2
+                    duty_num        <= pack_data[4]; //数据包3
+                    pulse_dessert   <= {pack_data[5],pack_data[6]}; //数据包4 5
+                    pulse_num       <= pack_data[7]; //数据包6
+                    PAT             <= {pack_data[8],pack_data[9],pack_data[10],pack_data[11]}; //数据包7 8 9 10
+                end
+                8'h02 : begin
+                    ls_pwm_ch       <= pack_data[2]; //数据包2
+                    ls_ctrl_sta     <= pack_data[3]; //数据包3
+                end
+                
+                default: begin
+                    hs_pwm_ch       <= hs_pwm_ch      ;
+                    hs_ctrl_sta     <= hs_ctrl_sta    ;
+                    duty_num        <= duty_num       ;
+                    pulse_dessert   <= pulse_dessert  ;
+                    pulse_num       <= pulse_num      ;
+                    PAT             <= PAT            ;
+                    ls_pwm_ch       <= ls_pwm_ch      ;
+                    ls_ctrl_sta     <= ls_ctrl_sta    ;
+                end
+            endcase
+            //  dataD <=pack_data[6];
             //  dataD <=pack_data[1];
-			 dataB <= {8'h0b,pack_data[2]};
-			 dataC <= {pack_data[12],pack_data[11]};
-			 recv_done <=1'b1;
+			//  dataB <= {8'h0b,pack_data[2]};
+			//  dataC <= {pack_data[12],pack_data[11]};
+			 
 		 end  
 		 else begin //数据错误
-			 dataA <= 8'd0; 
-			 dataB <= 16'd0;
-			 dataC <=16'd0;
-             dataD <= 8'd0;
-			 recv_done <=1'b0;
+            reg_func  <=8'd0;
+            recv_done <=1'b0;
+		    hs_pwm_ch       <= hs_pwm_ch      ;
+            hs_ctrl_sta     <= hs_ctrl_sta    ;
+            duty_num        <= duty_num       ;
+            pulse_dessert   <= pulse_dessert  ;
+            pulse_num       <= pulse_num      ;
+            PAT             <= PAT            ;
+            ls_pwm_ch       <= ls_pwm_ch      ;
+            ls_ctrl_sta     <= ls_ctrl_sta    ;
 		 end
 	 end
 	 else begin //数据保持到下�?个周期，标志位保持一个周�?
-		 dataA <= dataA; 
-		 dataB <= dataB;
-		 dataC <=dataC;
-         dataD <= dataD;
-		 recv_done <=1'b0;
+		    reg_func  <=reg_func;
+            recv_done <=1'b0;
+		    hs_pwm_ch       <= hs_pwm_ch      ;
+            hs_ctrl_sta     <= hs_ctrl_sta    ;
+            duty_num        <= duty_num       ;
+            pulse_dessert   <= pulse_dessert  ;
+            pulse_num       <= pulse_num      ;
+            PAT             <= PAT            ;
+            ls_pwm_ch       <= ls_pwm_ch      ;
+            ls_ctrl_sta     <= ls_ctrl_sta    ;
 	 end	 
 end
 
 // ila_0 u_ila_0(
 // .clk	(sys_clk),
 // .probe0	(rxdata),
-// .probe1	(dataA),
+// .probe1	(reg_func),
 // .probe2	(pack_data[1]),
 // .probe3	({rxdone_flag,uart_done,pack_ing}),
 // .probe4	(rx_cnt),
