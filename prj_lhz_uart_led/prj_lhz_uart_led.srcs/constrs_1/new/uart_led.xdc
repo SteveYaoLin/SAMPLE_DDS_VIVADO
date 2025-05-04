@@ -1,6 +1,6 @@
 set_property PACKAGE_PIN U18 [get_ports sys_clk]
 set_property PACKAGE_PIN N16 [get_ports sys_rst_n]
-set_property IOSTANDARD LVCMOS33 [get_ports sys_clk]
+set_property IOSTANDARD LVCMOS18 [get_ports sys_clk]
 set_property IOSTANDARD LVCMOS33 [get_ports sys_rst_n]
 #DDS BOARD
 set_property PACKAGE_PIN U9 [get_ports uart_rxd]
@@ -43,3 +43,6 @@ set_property PACKAGE_PIN B19 [get_ports {dac_data[4]}]
 set_property PACKAGE_PIN A20 [get_ports {dac_data[5]}]
 set_property PACKAGE_PIN H17 [get_ports {dac_data[6]}]
 set_property PACKAGE_PIN H16 [get_ports {dac_data[7]}]
+
+set_property PACKAGE_PIN U14 [get_ports pwm_diff_port_p]
+set_property IOSTANDARD DIFF_HSTL_II_18 [get_ports pwm_diff_port_p]

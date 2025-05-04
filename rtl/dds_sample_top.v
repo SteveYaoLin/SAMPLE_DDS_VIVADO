@@ -21,6 +21,8 @@ module dds_sample_top # (
     output ad9748_sleep, // Sleep control signal for AD9748
     output pwm_port,
     output pwm_slow_port,
+    output pwm_diff_port_n,
+    output pwm_diff_port_p,
     output wire uart_txd //J15
     
     // output reg [7:0] dataA,      // Data A output
@@ -107,9 +109,9 @@ breath_led u_breath_led(
     .sys_rst_n       (rst_n) ,    //
     .led (led_breath )           //
 );
-assign led = (dataA == 8'h08) ? led_breath : 1'b0 ; // Example: drive LED with the least significant bit of received data
+assign led = (pwm_valid == 8'h08) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
 
-wire [1:0] pwm_out;
+wire [4:0] pwm_out;
 wire pwm_oddr;
 pattern_pwm #(
     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�?????
@@ -158,6 +160,11 @@ OBUF #(
    .I(pwm_out[1])      // 来自ODDR的输�?????
 );
 
+OBUFDS obufds_inst0 (
+    .O(pwm_diff_port_p),  // 差分信号正端
+    .OB(pwm_diff_port_n), // 差分信号负端
+    .I(pwm_out[2])     // 单端信号输入
+);
 pattern_pwm #(
     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�?????
 ) pwm2 (
@@ -171,6 +178,21 @@ pattern_pwm #(
 /*output reg            */ .pwm_out(pwm_out[1]),      // PWM输出
 /*output reg            */ .busy(pwm_busy[1]),         // 忙信�?????
 /*output reg            */ .valid(pwm_valid[1])         // PWM结束标志
+);
+
+pattern_pwm #(
+    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�?????
+) pwm3 (
+/*input                 */ .clk(clk_50M),
+/*input                 */ .rst_n(rst_n),        // 异步复位（低有效�?????
+/*input                 */ .pwm_en(1'b1),       // 使能信号
+/*input [7:0]           */ .duty_num(8'd50),     // 占空比周期数
+/*input [15:0]          */ .pulse_dessert(16'd50),// 脉冲间隔周期�?????
+/*input [7:0]           */ .pulse_num(8'h0),    // 脉冲次数�?????0=无限�?????
+/*input [_PAT_WIDTH-1:0]*/ .PAT(16'h1), // 模式寄存�?????
+/*output reg            */ .pwm_out(pwm_out[2]),      // PWM输出
+/*output reg            */ .busy(pwm_busy[2]),         // 忙信�?????
+/*output reg            */ .valid(pwm_valid[2])         // PWM结束标志
 );
 
 pattern_ad9748 #(
