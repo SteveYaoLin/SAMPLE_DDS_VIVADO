@@ -38,3 +38,4 @@
 *.ini
 *.version
 !*.v
+!prj_lhz_uart_led\prj_lhz_uart_led.runs\impl_1\dds_sample_top.bit
