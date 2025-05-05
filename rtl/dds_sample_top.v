@@ -158,7 +158,7 @@ OBUF #(
    .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�??????
 ) OBUF_fast_sig (
    .O(pwm_port),      // 实际引脚（B35_L19_P�??????
-   .I(pwm_out[0])      // 来自ODDR的输�??????
+   .I(1'b1)      // 来自ODDR的输�??????
 );
 
 OBUF #(
@@ -173,7 +173,7 @@ OBUF #(
 OBUFDS obufds_inst0 (
     .O(pwm_diff_port_p),  // 差分信号正端
     .OB(pwm_diff_port_n), // 差分信号负端
-    .I(pwm_out[2])     // 单端信号输入
+    .I(1'b1)     // 单端信号输入
 );
 pattern_pwm #(
     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??????
@@ -181,10 +181,10 @@ pattern_pwm #(
 /*input                 */ .clk(clk_50M),
 /*input                 */ .rst_n(rst_n),        // 异步复位（低有效�??????
 /*input                 */ .pwm_en(1'b1),       // 使能信号
-/*input [7:0]           */ .duty_num(8'd50),     // 占空比周期数
-/*input [15:0]          */ .pulse_dessert(16'd50),// 脉冲间隔周期�??????
+/*input [7:0]           */ .duty_num(8'd255),     // 占空比周期数
+/*input [15:0]          */ .pulse_dessert(16'd5920),// 脉冲间隔周期�??????
 /*input [7:0]           */ .pulse_num(8'h0),    // 脉冲次数�??????0=无限�??????
-/*input [_PAT_WIDTH-1:0]*/ .PAT(16'h1), // 模式寄存�??????
+/*input [_PAT_WIDTH-1:0]*/ .PAT(16'hffff), // 模式寄存�??????
 /*output reg            */ .pwm_out(pwm_out[1]),      // PWM输出
 /*output reg            */ .busy(pwm_busy[1]),         // 忙信�??????
 /*output reg            */ .valid(pwm_valid[1])         // PWM结束标志
