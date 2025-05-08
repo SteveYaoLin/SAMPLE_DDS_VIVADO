@@ -21,10 +21,21 @@ module uart_top_vlg_tst();
 	 wire [7:0] pack_num;
 	 
 	 wire        recv_done;
-	 wire [7:0]  dataA;    
-	 wire [7:0]  dataD;           
-	 wire [15:0] dataB;            
-	 wire [15:0] dataC;
+	 wire [7:0]     rev_data0   ;
+	 wire [7:0]     rev_data1   ;
+	 wire [7:0]     rev_data2   ;
+	 wire [7:0]     rev_data3   ;
+	 wire [7:0]     rev_data4   ;
+	 wire [7:0]     rev_data5   ;
+	 wire [7:0]     rev_data6   ;
+	 wire [7:0]     rev_data7   ;
+	 wire [7:0]     rev_data8   ;
+	 wire [7:0]     rev_data9   ;
+	 wire [7:0]     rev_data10  ;
+	 wire [7:0]     rev_data11  ;  
+	            
+	             
+	 
   
 	//时钟参数
 	parameter SYS_CLK_FRE = 50_000_000;     //系统频率50MHz  40_000_000
@@ -508,14 +519,18 @@ uart_mult_byte_rx #(
 	.pack_ing    (pack_ing),
 	.pack_num    (pack_num),
 	.recv_done   (recv_done),
-	.hs_pwm_ch    (),
-	.hs_ctrl_sta  (),
-	.duty_num     (),
-	.pulse_dessert(),
-	.pulse_num    (),
-	.PAT          (),
-	.ls_pwm_ch    (),
-	.ls_ctrl_sta  ()
+	.rev_data0   (rev_data0 ),
+	.rev_data1   (rev_data1 ),
+	.rev_data2   (rev_data2 ),
+	.rev_data3   (rev_data3 ),
+	.rev_data4   (rev_data4 ),
+	.rev_data5   (rev_data5 ),
+	.rev_data6   (rev_data6 ),
+	.rev_data7   (rev_data7 ),
+	.rev_data8   (rev_data8 ),
+	.rev_data9   (rev_data9 ),
+	.rev_data10  (rev_data10),
+	.rev_data11  (rev_data11)
   );  
 
 endmodule
