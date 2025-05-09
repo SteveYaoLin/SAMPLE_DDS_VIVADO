@@ -57,8 +57,9 @@ wire [15:0] dataB;
 wire [15:0] dataC;
 wire led_enable;
 wire led_breath;
-wire [7:0] pwm_busy;
-wire [7:0] pwm_valid;
+wire [_NUM_CHANNELS - 1:0] pwm_out;
+wire [_NUM_CHANNELS - 1:0] pwm_busy;
+wire [_NUM_CHANNELS - 1:0] pwm_valid;
 
 wire [7:0]     hs_pwm_ch     [_NUM_CHANNELS-1:0];
 wire [7:0]     hs_ctrl_sta   [_NUM_CHANNELS-1:0];
@@ -161,17 +162,18 @@ uart_reg_mapper # (
    /*input       */  .pack_done   (pack_done   ) ,     // 数据包接收完成标志
    
    // PWM通道接口
-   /*output [7:0] */ .hs_ctrl_sta   (hs_ctrl_sta  ), 
-   /*output [7:0] */ .duty_num      (duty_num     ), 
-   /*output [15:0]*/ .pulse_dessert (pulse_dessert), 
-   /*output [7:0] */ .pulse_num     (pulse_num    ), 
-   /*output [31:0]*/ .PAT           (PAT          ), 
-   /*output [7:0] */ .ls_ctrl_sta   (ls_ctrl_sta  ), 
-   /*output [7:0] */ .hs_pwm_ch     (hs_pwm_ch    ), 
-   /*output [7:0] */ .ls_pwm_ch     (ls_pwm_ch    )                      
-   // output wire [_NUM_CHANNELS-1:0] pwm_out,    // PWM输出总线
-   // output wire [_NUM_CHANNELS-1:0] pwm_busy,   // 忙状态总线
-   // output wire [_NUM_CHANNELS-1:0] pwm_valid   // 有效标志总线
+   /*output [7:0]  .hs_ctrl_sta   (hs_ctrl_sta  ), */
+   /*output [7:0]  .duty_num      (duty_num     ), */
+   /*output [15:0] .pulse_dessert (pulse_dessert), */
+   /*output [7:0]  .pulse_num     (pulse_num    ), */
+   /*output [31:0] .PAT           (PAT          ), */
+   /*output [7:0]  .ls_ctrl_sta   (ls_ctrl_sta  ), */
+   /*output [7:0]  .hs_pwm_ch     (hs_pwm_ch    ), */
+   /*output [7:0]  .ls_pwm_ch     (ls_pwm_ch    )  */          
+   /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data (dac_data ),         
+   /*output wire [_NUM_CHANNELS-1:0]*/.pwm_out  (pwm_out  ),    // PWM输出总线
+   /*output wire [_NUM_CHANNELS-1:0]*/.pwm_busy (pwm_busy ),   // 忙状态总线
+   /*output wire [_NUM_CHANNELS-1:0]*/.pwm_valid(pwm_valid)   // 有效标志总线
 );
 //assign led_enable = (dataA == 8'h08) ? 1'b1 : 1'b0 ; // Example: drive LED with the least significant bit of received data
 breath_led u_breath_led(
@@ -179,70 +181,69 @@ breath_led u_breath_led(
     .sys_rst_n       (rst_n) ,    //
     .led (led_breath )           //
 );
-assign led = (ls_pwm_ch == 8'h08) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
 
-wire [4:0] pwm_out;
-wire pwm_oddr;
 
-pattern_pwm #(
-    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??????
-) pwm0 (
-/*input                 */ .clk(clk_50M),
-/*input                 */ .rst_n(rst_n),                     
-/*input                 */ .pwm_en       ( hs_ctrl_sta  [0] ),
-/*input [7:0]           */ .duty_num     ( duty_num     [0] ),
-/*input [15:0]          */ .pulse_dessert( pulse_dessert[0] ),
-/*input [7:0]           */ .pulse_num    ( pulse_num    [0] ),
-/*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [0] ),
-/*output reg            */ .pwm_out      ( pwm_out      [0] ),
-/*output reg            */ .busy         ( pwm_busy     [0] ),
-/*output reg            */ .valid        ( pwm_valid    [0] ) 
-);
-pattern_pwm #(
-    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??????
-) pwm1 (
-/*input                 */ .clk(clk_50M),
-/*input                 */ .rst_n(rst_n),                     
-/*input                 */ .pwm_en       ( hs_ctrl_sta  [1] ),
-/*input [7:0]           */ .duty_num     ( duty_num     [1] ),
-/*input [15:0]          */ .pulse_dessert( pulse_dessert[1] ),
-/*input [7:0]           */ .pulse_num    ( pulse_num    [1] ),
-/*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [1] ),
-/*output reg            */ .pwm_out      ( pwm_out      [1] ),
-/*output reg            */ .busy         ( pwm_busy     [1] ),
-/*output reg            */ .valid        ( pwm_valid    [1] ) 
-);
+// wire pwm_oddr;
 
-pattern_pwm #(
-    ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??????
-) pwm2 (
-/*input                 */ .clk(clk_50M),
-/*input                 */ .rst_n(rst_n),                       // 异步复位（低有效�??????
-/*input                 */ .pwm_en       ( hs_ctrl_sta  [2] ),       // 使能信号
-/*input [7:0]           */ .duty_num     ( duty_num     [2] ),     // 占空比周期数
-/*input [15:0]          */ .pulse_dessert( pulse_dessert[2] ),  // 脉冲间隔周期�??????
-/*input [7:0]           */ .pulse_num    ( pulse_num    [2] ),    // 脉冲次数�??????0=无限�??????
-/*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [2] ),  // 模式寄存�??????
-/*output reg            */ .pwm_out      ( pwm_out      [2] ),      // PWM输出
-/*output reg            */ .busy         ( pwm_busy     [2] ),         // 忙信�??????
-/*output reg            */ .valid        ( pwm_valid    [2] )         // PWM结束标志
-);
-pattern_ad9748 #(
-    ._PAT_WIDTH(_PAT_WIDTH),    // 模式寄存器宽�??
-    ._DAC_WIDTH(_DAC_WIDTH)     // DAC数据宽度
-) pwm_dac (
-    .clk(clk_50M),
-    .rst_n(rst_n),                     
-    .pwm_en       ( hs_ctrl_sta  [3] ),
-    .duty_num     ( duty_num     [3] ),
-    .pulse_dessert( pulse_dessert[3] ),
-    .pulse_num    ( pulse_num    [3] ),
-    .PAT          ( PAT          [3] ),
-    .pwm_out      ( pwm_out      [3] ),
-    .busy         ( pwm_busy     [3] ),
-    .valid        ( pwm_valid    [3] ),
-    .dac_data     ( dac_data         )       // DAC数据输出   
-);
+// pattern_pwm #(
+//     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??????
+// ) pwm0 (
+// /*input                 */ .clk(clk_50M),
+// /*input                 */ .rst_n(rst_n),                     
+// /*input                 */ .pwm_en       ( hs_ctrl_sta  [0] ),
+// /*input [7:0]           */ .duty_num     ( duty_num     [0] ),
+// /*input [15:0]          */ .pulse_dessert( pulse_dessert[0] ),
+// /*input [7:0]           */ .pulse_num    ( pulse_num    [0] ),
+// /*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [0] ),
+// /*output reg            */ .pwm_out      ( pwm_out      [0] ),
+// /*output reg            */ .busy         ( pwm_busy     [0] ),
+// /*output reg            */ .valid        ( pwm_valid    [0] ) 
+// );
+// pattern_pwm #(
+//     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??????
+// ) pwm1 (
+// /*input                 */ .clk(clk_50M),
+// /*input                 */ .rst_n(rst_n),                     
+// /*input                 */ .pwm_en       ( hs_ctrl_sta  [1] ),
+// /*input [7:0]           */ .duty_num     ( duty_num     [1] ),
+// /*input [15:0]          */ .pulse_dessert( pulse_dessert[1] ),
+// /*input [7:0]           */ .pulse_num    ( pulse_num    [1] ),
+// /*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [1] ),
+// /*output reg            */ .pwm_out      ( pwm_out      [1] ),
+// /*output reg            */ .busy         ( pwm_busy     [1] ),
+// /*output reg            */ .valid        ( pwm_valid    [1] ) 
+// );
+
+// pattern_pwm #(
+//     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�??????
+// ) pwm2 (
+// /*input                 */ .clk(clk_50M),
+// /*input                 */ .rst_n(rst_n),                       // 异步复位（低有效�??????
+// /*input                 */ .pwm_en       ( hs_ctrl_sta  [2] ),       // 使能信号
+// /*input [7:0]           */ .duty_num     ( duty_num     [2] ),     // 占空比周期数
+// /*input [15:0]          */ .pulse_dessert( pulse_dessert[2] ),  // 脉冲间隔周期�??????
+// /*input [7:0]           */ .pulse_num    ( pulse_num    [2] ),    // 脉冲次数�??????0=无限�??????
+// /*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [2] ),  // 模式寄存�??????
+// /*output reg            */ .pwm_out      ( pwm_out      [2] ),      // PWM输出
+// /*output reg            */ .busy         ( pwm_busy     [2] ),         // 忙信�??????
+// /*output reg            */ .valid        ( pwm_valid    [2] )         // PWM结束标志
+// );
+// pattern_ad9748 #(
+//     ._PAT_WIDTH(_PAT_WIDTH),    // 模式寄存器宽�??
+//     ._DAC_WIDTH(_DAC_WIDTH)     // DAC数据宽度
+// ) pwm_dac (
+//     .clk(clk_50M),
+//     .rst_n(rst_n),                     
+//     .pwm_en       ( hs_ctrl_sta  [3] ),
+//     .duty_num     ( duty_num     [3] ),
+//     .pulse_dessert( pulse_dessert[3] ),
+//     .pulse_num    ( pulse_num    [3] ),
+//     .PAT          ( PAT          [3] ),
+//     .pwm_out      ( pwm_out      [3] ),
+//     .busy         ( pwm_busy     [3] ),
+//     .valid        ( pwm_valid    [3] ),
+//     .dac_data     ( dac_data         )       // DAC数据输出   
+// );
 
 // ODDR #(
 //    .DDR_CLK_EDGE("SAME_EDGE"),  // 时钟双沿采样模式
@@ -291,6 +292,7 @@ OBUFDS obufds_inst0 (
 // .probe0	({pwm_busy,pwm_oddr})
 // );
 
+assign led = (pwm_valid == 8'h08) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
 assign ad9748_sleep = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b1 : 1'b0; // 使能AD9748休眠模式（低电平有效�???
 
 endmodule
