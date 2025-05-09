@@ -100,7 +100,7 @@ endtask
     uart_send_byte(8'h0a);  // dataB[7:0]
     uart_send_byte(8'h0b);  // dataB[15:8]
     uart_send_byte(8'h0c);  // dataC[7:0]
-    uart_send_byte(8'haa);  // 假设包尾
+    uart_send_byte(8'haa);  // 假设包尾		
 	#BAUD_RATE_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
 	#(BAUD_RATE_PERIOD * 5) ; 	

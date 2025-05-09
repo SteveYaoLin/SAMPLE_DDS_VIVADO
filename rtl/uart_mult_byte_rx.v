@@ -9,7 +9,7 @@ module uart_mult_byte_rx(
 	 
 	 output  reg [7:0] pack_cnt,                //字节计数
 	 output  reg       pack_ing, 	            //接收过程标志�??
-	 output  reg       pack_done,               //帧接收完成标志位
+	 output  reg       pack_done_d0,               //帧接收完成标志位
 	 output  reg [7:0] pack_num,                //接收到的字节�??
 	 output  reg       recv_done,              //接收完一帧数据的接收和解�??
 
@@ -54,7 +54,7 @@ reg   uart_done_d0;
 reg   uart_done_d1;
 //包数据接收完�??
 wire  packdone_flag;
-reg   pack_done_d0;
+reg   pack_done;
 reg   pack_done_d1;
 // reg [7:0] reg_func;                            //接收数据包功能号
 //*****************************************************
