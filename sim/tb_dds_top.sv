@@ -72,18 +72,18 @@ initial begin
 	#BIT_PERIOD; 						//直接延时，一个波特率周期
 	$display("Sending configuration data...");	
     uart_send_byte(8'h55);  // 假设包头
-    uart_send_byte(8'h01);  // dataA
-    uart_send_byte(8'h01);  // dataD
-    uart_send_byte(8'h01);  // dataB[7:0]
-    uart_send_byte(8'h03);  // dataB[15:8]
-    uart_send_byte(8'h00);  // dataC[7:0]
-    uart_send_byte(8'h44);  // dataC[15:8]
-	uart_send_byte(8'h00);  // 假设包头
-    uart_send_byte(8'h00);  // dataA
-    uart_send_byte(8'h00);  // dataD
-    uart_send_byte(8'h00);  // dataB[7:0]
-    uart_send_byte(8'hff);  // dataB[15:8]
-    uart_send_byte(8'h0c);  // dataC[7:0]
+    uart_send_byte(8'h01);  // reg_func
+    uart_send_byte(8'h01);  // hs_pwm_ch
+    uart_send_byte(8'h01);  // hs_ctrl_sta
+    uart_send_byte(8'h03);  // duty_num
+    uart_send_byte(8'h00);  // pulse_dessert H
+    uart_send_byte(8'h44);  // pulse_dessert L
+	uart_send_byte(8'h00);  // pulse_num
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'hff);  // PAT
+    uart_send_byte(8'h0c);  // CRC
     uart_send_byte(8'haa);  // 假设包尾		
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
