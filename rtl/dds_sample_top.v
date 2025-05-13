@@ -117,7 +117,7 @@ uart_mult_byte_rx u_uart_rx_inst (
     
     .pack_cnt   (pack_cnt),     // Connect to internal signal
     .pack_ing   (pack_ing),     // Connect to internal signal
-    .pack_done_d0  (pack_done),    // Connect to internal signal
+    .pack_done_d1  (pack_done),    // Connect to internal signal
     .pack_num   (pack_num),     // Connect to internal signal
     .recv_done  (recv_done),    // Connect to internal signal
     

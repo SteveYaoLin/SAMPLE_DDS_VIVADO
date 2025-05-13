@@ -515,7 +515,7 @@ uart_mult_byte_rx #(
 	.uart_data   (rx_data),
 	.uart_get    (rx_get),
 	.pack_cnt    (pack_cnt),
-	.pack_done   (pack_done),
+	.pack_done_d1   (pack_done),
 	.pack_ing    (pack_ing),
 	.pack_num    (pack_num),
 	.recv_done   (recv_done),
