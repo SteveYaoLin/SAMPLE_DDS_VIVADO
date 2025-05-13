@@ -87,57 +87,57 @@ initial begin
     uart_send_byte(8'haa);  // 假设包尾		
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
-	#(BIT_PERIOD * 5) ; 	
+	#(BIT_PERIOD * 50) ; 	
 	$display("The 1st package...");	
 	uart_send_byte(8'h55);  // 假设包头
-    uart_send_byte(8'h01);  // dataA
-    uart_send_byte(8'h00);  // dataD
-    uart_send_byte(8'h01);  // dataB[7:0]
-    uart_send_byte(8'hff);  // dataB[15:8]
-    uart_send_byte(8'h07);  // dataC[7:0]
-    uart_send_byte(8'h30);  // dataC[15:8]
-	uart_send_byte(8'h00);  // 假设包头
-    uart_send_byte(8'hff);  // dataA
-    uart_send_byte(8'hff);  // dataD
-    uart_send_byte(8'hff);  // dataB[7:0]
-    uart_send_byte(8'hff);  // dataB[15:8]
-    uart_send_byte(8'h0c);  // dataC[7:0]
+    uart_send_byte(8'h01);  // reg_func
+    uart_send_byte(8'h01);  // hs_pwm_ch
+    uart_send_byte(8'h01);  // hs_ctrl_sta
+    uart_send_byte(8'hff);  // duty_num
+    uart_send_byte(8'h07);  // pulse_dessert H
+    uart_send_byte(8'h30);  // pulse_dessert L
+	uart_send_byte(8'h00);  // pulse_num
+    uart_send_byte(8'hff);  // PAT
+    uart_send_byte(8'hff);  // PAT
+    uart_send_byte(8'hff);  // PAT
+    uart_send_byte(8'hff);  // PAT
+    uart_send_byte(8'h0c);  // CRC
     uart_send_byte(8'haa );  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
-	#(BIT_PERIOD * 5) ; 
+	#(BIT_PERIOD * 50) ; 
 	$display("The second package...");	
 	uart_send_byte(8'h55);  // 假设包头
-    uart_send_byte(8'h02);  // dataA
-    uart_send_byte(8'h12);  // dataD
-    uart_send_byte(8'h13);  // dataB[7:0]
-    uart_send_byte(8'h14);  // dataB[15:8]
-    uart_send_byte(8'h15);  // dataC[7:0]
-    uart_send_byte(8'h16);  // dataC[15:8]
-	uart_send_byte(8'h17);  // 假设包头
-    uart_send_byte(8'h18);  // dataA
-    uart_send_byte(8'h19);  // dataD
-    uart_send_byte(8'h1a);  // dataB[7:0]
-    uart_send_byte(8'h1b);  // dataB[15:8]
-    uart_send_byte(8'h1c);  // dataC[7:0]
+    uart_send_byte(8'h02);  // reg_func
+    uart_send_byte(8'h12);  // hs_pwm_ch
+    uart_send_byte(8'h13);  // hs_ctrl_sta
+    uart_send_byte(8'h14);  // duty_num
+    uart_send_byte(8'h15);  // pulse_dessert H
+    uart_send_byte(8'h16);  // pulse_dessert L
+	uart_send_byte(8'h17);  // pulse_num
+    uart_send_byte(8'h18);  // PAT
+    uart_send_byte(8'h19);  // PAT
+    uart_send_byte(8'h1a);  // PAT
+    uart_send_byte(8'h1b);  // PAT
+    uart_send_byte(8'h1c);  // CRC
     uart_send_byte(8'hAA );  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
 	#(BIT_PERIOD * 5) ; 	
 	$display("The 3rd package...");	
 	uart_send_byte(8'h55);  // 假设包头
-    uart_send_byte(8'h01);  // dataA
-    uart_send_byte(8'h22);  // dataD
-    uart_send_byte(8'h23);  // dataB[7:0]
-    uart_send_byte(8'h24);  // dataB[15:8]
-    uart_send_byte(8'h25);  // dataC[7:0]
-    uart_send_byte(8'h26);  // dataC[15:8]
-	uart_send_byte(8'h27);  // 假设包头
-    uart_send_byte(8'h28);  // dataA
-    uart_send_byte(8'h29);  // dataD
-    uart_send_byte(8'h2a);  // dataB[7:0]
-    uart_send_byte(8'h2b);  // dataB[15:8]
-    uart_send_byte(8'h2c);  // dataC[7:0]
+    uart_send_byte(8'h01);  // reg_func
+    uart_send_byte(8'h22);  // hs_pwm_ch
+    uart_send_byte(8'h23);  // hs_ctrl_sta
+    uart_send_byte(8'h24);  // duty_num
+    uart_send_byte(8'h25);  // pulse_dessert H
+    uart_send_byte(8'h26);  // pulse_dessert L
+	uart_send_byte(8'h27);  // pulse_num
+    uart_send_byte(8'h28);  // PAT
+    uart_send_byte(8'h29);  // PAT
+    uart_send_byte(8'h2a);  // PAT
+    uart_send_byte(8'h2b);  // PAT
+    uart_send_byte(8'h2c);  // CRC
     uart_send_byte(8'hAA );  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高

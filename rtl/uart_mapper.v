@@ -187,8 +187,8 @@ pattern_ad9748 #(
   .probe2	(pulse_dessert[1][15:8]),
   .probe3	({hs_ctrl_sta[1][0],pwm_out[1],pwm_busy[1],pack_done}),
   .probe4	(PAT[1][7 :0]),
-  .probe5	(PAT[1][15:8]),
-  .probe6	(PAT[1][23:16]),
-  .probe7	(PAT[1][31:24])
+  .probe5	(func_reg),
+  .probe6	(rev_data0),
+  .probe7	(rev_data2)
   );
 endmodule

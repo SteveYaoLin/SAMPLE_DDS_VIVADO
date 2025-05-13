@@ -21,6 +21,8 @@ module dds_sample_top # (
     output wire led,        // LED drive signal H 15
     output ad9748_sleep, // Sleep control signal for AD9748
     output pwm_port,
+    output adc_clk_p,
+    output adc_clk_n,
     output pwm_slow_port,
     output pwm_diff_port_n,
     output pwm_diff_port_p,
@@ -170,7 +172,7 @@ uart_reg_mapper # (
    /*output [7:0]  .ls_ctrl_sta   (ls_ctrl_sta  ), */
    /*output [7:0]  .hs_pwm_ch     (hs_pwm_ch    ), */
    /*output [7:0]  .ls_pwm_ch     (ls_pwm_ch    )  */          
-   /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data (dac_data ),         
+   /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data ( ),         
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_out  (pwm_out  ),    // PWM输出总线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_busy (pwm_busy ),   // 忙状态总线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_valid(pwm_valid)   // 有效标志总线
@@ -284,7 +286,11 @@ OBUFDS obufds_inst0 (
 );
 
 
-
+OBUFDS obufds_inst1 (
+    .O(adc_clk_p),  // 差分信号正端
+    .OB(adc_clk_n), // 差分信号负端
+    .I(clk_100M)     // 单端信号输入
+);
 
 // assign pwm_port = pwm_out[0] ; // 直接连接到引�????
 // ila_0 u_ila_0(
@@ -292,7 +298,7 @@ OBUFDS obufds_inst0 (
 // .probe0	({pwm_busy,pwm_oddr})
 // );
 
-assign led = (pwm_valid == 8'h08) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
-assign ad9748_sleep = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b1 : 1'b0; // 使能AD9748休眠模式（低电平有效�???
-
+assign led = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
+assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�???
+assign dac_data = 8'hff; // DAC数据输出（根据需要设置）
 endmodule
