@@ -5,9 +5,9 @@ set_property IOSTANDARD LVCMOS33 [get_ports sys_rst_n]
 #DDS BOARD
 
 ##领航者底板 UART调试器 红色为TXD
-set_property PACKAGE_PIN U9 [get_ports uart_rxd]
-#set_property PACKAGE_PIN N15 [get_ports uart_txd]
-#set_property PACKAGE_PIN N16 [get_ports uart_rxd]
+#set_property PACKAGE_PIN U9 [get_ports uart_rxd]
+set_property PACKAGE_PIN N15 [get_ports uart_txd]
+set_property PACKAGE_PIN N16 [get_ports uart_rxd]
 set_property PACKAGE_PIN J16 [get_ports led]
 set_property IOSTANDARD LVCMOS33 [get_ports led]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_rxd]
@@ -52,7 +52,7 @@ set_property IOSTANDARD DIFF_HSTL_II_18 [get_ports pwm_diff_port_p]
 
 
 
-set_property PACKAGE_PIN J15 [get_ports uart_txd]
+#set_property PACKAGE_PIN J15 [get_ports uart_txd]
 
 set_property IOSTANDARD DIFF_HSTL_II_18 [get_ports adc_clk_p]
 set_property PACKAGE_PIN N20 [get_ports adc_clk_p]
