@@ -180,15 +180,15 @@ pattern_ad9748 #(
     .valid        ( pwm_valid    [_NUM_CHANNELS-1] ),
     .dac_data     ( dac_data         )       // DAC数据输出   
 );
-  ila_0 u_ila_1(
-   .clk	(clk_50M),
-   .probe0	(duty_num[1]),
-   .probe1	(pulse_dessert[1][7 :0]),
-   .probe2	(pulse_dessert[1][15:8]),
-   .probe3	({hs_ctrl_sta[1][0],pwm_out[1],pwm_busy[1],pack_done}),
-   .probe4	(PAT[1][7 :0]),
-   .probe5	(func_reg),
-   .probe6	(rev_data0),
-   .probe7	(rev_data2)
-   );
+//  ila_0 u_ila_1(
+//   .clk	(clk_50M),
+//   .probe0	(duty_num[1]),
+//   .probe1	(pulse_dessert[1][7 :0]),
+//   .probe2	(pulse_dessert[1][15:8]),
+//   .probe3	({hs_ctrl_sta[1][0],pwm_out[1],pwm_busy[1],pack_done}),
+//   .probe4	(PAT[1][7 :0]),
+//   .probe5	(func_reg),
+//   .probe6	(rev_data0),
+//   .probe7	(rev_data2)
+//   );
 endmodule
