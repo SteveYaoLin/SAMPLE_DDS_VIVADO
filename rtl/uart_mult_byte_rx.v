@@ -56,7 +56,8 @@ reg   uart_done_d1;
 wire  packdone_flag;
 reg   pack_done;
 reg   pack_done_d0;
-
+wire [7:0] crc8_value;  // 当前CRC值
+reg        crc8_en;     // CRC计算使能
 // reg [7:0] reg_func;                            //接收数据包功能号
 //*****************************************************
 //**                    main code
@@ -218,7 +219,23 @@ always @(posedge sys_clk or posedge sys_rst_n) begin      //接收到数�????
 		    pack_data[j] <= pack_data[j];	
 	 end
 end
-
+// ================== 控制逻辑 ==================
+always @(posedge sys_clk or negedge sys_rst_n) begin
+    if (sys_rst_n) begin
+        crc8_en <= 1'b0;
+    end else begin
+        // 在接收数据时使能CRC计算
+        crc8_en <= uart_done;  // uart_done为字节接收完成标志
+    end
+end
+crc8 u_crc8 (
+    .clk      (sys_clk),
+    .rst_n    (~sys_rst_n),
+    .crc_en   (crc8_en),
+    .crc_clr  (pack_done),  // 一帧接收完成时清除CRC
+    .data_in  (uart_data),  // 接收到的字节
+    .crc_out  (crc8_value)
+);
 
 //------------解码-------------------------//
 //捕获接收完成标志位的上升沿，得到�????个时钟周期的脉冲信号

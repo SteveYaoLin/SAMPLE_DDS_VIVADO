@@ -3,7 +3,7 @@ if {[file exists work]} {
 }
 vlib work
 vmap work work
-vlog -work work +define+questasim +acc +fullpar tb_uart_mult_byte.sv ../../rtl/uart_mult_byte_rx.v -l vlog.g
+vlog -work work +define+questasim +acc +fullpar tb_uart_mult_byte.sv ../../rtl/uart_mult_byte_rx.v ../../rtl/crc8.v -l vlog.g
 vsim -c -l vsim.log +define+questasim -voptargs=+acc -fsmdebug work.uart_top_vlg_tst
 
 # 1. 在运行 DO 文件后直接进行 2ms 的仿真
