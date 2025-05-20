@@ -168,17 +168,30 @@ end
 pattern_ad9748 #(
     ._PAT_WIDTH(_PAT_WIDTH),    // 模式寄存器宽�????
     ._DAC_WIDTH(_DAC_WIDTH)     // DAC数据宽度
+// ) pwm_dac (
+//     .clk(clk_100M),
+//     .rst_n(rst_n),                     
+//     .pwm_en       ( hs_ctrl_sta  [_NUM_CHANNELS-1] [0] ),
+//     .duty_num     ( duty_num     [_NUM_CHANNELS-1] ),
+//     .pulse_dessert( pulse_dessert[_NUM_CHANNELS-1] ),
+//     .pulse_num    ( pulse_num    [_NUM_CHANNELS-1] ),
+//     .PAT          ( PAT          [_NUM_CHANNELS-1] ),
+//     .pwm_out      ( pwm_out      [_NUM_CHANNELS-1] ),
+//     .busy         ( pwm_busy     [_NUM_CHANNELS-1] ),
+//     .valid        ( pwm_valid    [_NUM_CHANNELS-1] ),
+//     .dac_data     ( dac_data         )       // DAC数据输出   
+// );
 ) pwm_dac (
     .clk(clk_100M),
     .rst_n(rst_n),                     
-    .pwm_en       ( hs_ctrl_sta  [_NUM_CHANNELS-1] [0] ),
-    .duty_num     ( duty_num     [_NUM_CHANNELS-1] ),
-    .pulse_dessert( pulse_dessert[_NUM_CHANNELS-1] ),
-    .pulse_num    ( pulse_num    [_NUM_CHANNELS-1] ),
-    .PAT          ( PAT          [_NUM_CHANNELS-1] ),
-    .pwm_out      ( pwm_out      [_NUM_CHANNELS-1] ),
-    .busy         ( pwm_busy     [_NUM_CHANNELS-1] ),
-    .valid        ( pwm_valid    [_NUM_CHANNELS-1] ),
+    .pwm_en       ( 1'b1       ),     // 使用控制寄存器的bit0作为使能
+    .duty_num     ( 8'h01     ),
+    .pulse_dessert( 8'h01 ),
+    .pulse_num    ( 8'h00 ),
+    .PAT          ( 32'h01 ),
+    .pwm_out      (  ),
+    .busy         (  ),
+    .valid        (  ),
     .dac_data     ( dac_data         )       // DAC数据输出   
 );
 //  ila_0 u_ila_1(
