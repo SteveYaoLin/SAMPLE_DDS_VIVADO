@@ -9,6 +9,12 @@ reg         uart_rxd;
 wire        led;
 wire        pwm_port;
 wire        uart_txd;
+wire pwm_port_slow;
+wire debug_uart_tx;
+wire debug_uart_rx;
+wire    adc_clk_p;
+wire    adc_clk_n;
+wire [7:0] dac_data;
 
 // 定义仿真控制参数
 localparam SYS_CLK_PERIOD = 20;    // 100MHz系统时钟
@@ -23,15 +29,20 @@ dds_sample_top uut (
     .uart_rxd    (uart_rxd),
     .led         (led),
     .pwm_port    (pwm_port),
-    .dac_data   (),
+    .dac_data   (dac_data),
+    .pwm_slow_port  (pwm_port_slow),
 //    .led    (),
     .ad9748_sleep(),
 //    .pwm_port   (),
-    .pwm_slow_port(),
-    .pwm_diff_port_n(),
-    .pwm_diff_port_p(),
-    .uart_txd    (uart_txd)
+    // .pwm_slow_port(),
+    // .pwm_diff_port_n(),
+    // .pwm_diff_port_p(),
+    .adc_clk_p(adc_clk_p),
+    .adc_clk_n(adc_clk_n),
 
+    .debug_uart_tx(debug_uart_tx),
+    .debug_uart_rx(debug_uart_rx),
+    .uart_txd    (uart_txd)
 );
 
 // 系统时钟生成

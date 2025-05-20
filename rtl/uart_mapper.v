@@ -186,7 +186,7 @@ pattern_ad9748 #(
     .rst_n(rst_n),                     
     .pwm_en       ( 1'b1       ),     // 使用控制寄存器的bit0作为使能
     .duty_num     ( 8'h01     ),
-    .pulse_dessert( 8'h01 ),
+    .pulse_dessert( 16'h01 ),
     .pulse_num    ( 8'h00 ),
     .PAT          ( 32'h01 ),
     .pwm_out      (  ),
