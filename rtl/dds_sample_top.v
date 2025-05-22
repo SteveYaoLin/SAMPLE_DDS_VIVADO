@@ -177,7 +177,7 @@ uart_reg_mapper # (
    /*output [7:0]  .ls_ctrl_sta   (ls_ctrl_sta  ), */
    /*output [7:0]  .hs_pwm_ch     (hs_pwm_ch    ), */
    /*output [7:0]  .ls_pwm_ch     (ls_pwm_ch    )  */          
-   /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data ( dac_data),         
+   /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data (dac_data ),         
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_out  (pwm_out  ),    // PWM输出总线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_busy (pwm_busy ),   // 忙状态�?�线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_valid(pwm_valid)   // 有效标志总线
@@ -311,7 +311,7 @@ OBUFDS obufds_inst1 (
 
 assign led = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
 assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�???????
-// assign dac_data = 8'hff; // DAC数据输出（根据需要设置）
+// assign dac_data = 8'h7f; // DAC数据输出（根据需要设置）
 assign uart_txd = 1'b1; // UART TXD输出（根据需要设置）
 assign debug_uart_tx = 1'b1; // Debug UART TXD输出（根据需要设置）
 assign debug_uart_rx = 1'b0; // Debug UART RXD输出（根据需要设置）
