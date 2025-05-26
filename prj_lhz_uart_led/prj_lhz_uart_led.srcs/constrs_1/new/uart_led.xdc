@@ -46,8 +46,8 @@ set_property PACKAGE_PIN A20 [get_ports {dac_data[5]}]
 set_property PACKAGE_PIN H17 [get_ports {dac_data[6]}]
 set_property PACKAGE_PIN H16 [get_ports {dac_data[7]}]
 
-#set_property PACKAGE_PIN U14 [get_ports pwm_diff_port_p]
-#set_property IOSTANDARD DIFF_HSTL_II_18 [get_ports pwm_diff_port_p]
+set_property PACKAGE_PIN U14 [get_ports pwm_diff_port_p]
+set_property IOSTANDARD DIFF_HSTL_II_18 [get_ports pwm_diff_port_p]
 
 
 
@@ -65,5 +65,5 @@ set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
 connect_debug_port dbg_hub/clk [get_nets clk_50M]
 
-#set_property IOSTANDARD DIFF_HSTL_II_18 [get_ports dds_clk0_p]
-#set_property PACKAGE_PIN N18 [get_ports dds_clk0_p]
+set_property IOSTANDARD DIFF_HSTL_II_18 [get_ports dds_clk0_p]
+set_property PACKAGE_PIN N18 [get_ports dds_clk0_p]
