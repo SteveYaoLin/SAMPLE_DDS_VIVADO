@@ -219,7 +219,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin      //接收到数�?????
 				 pack_ing <=1'b0;
 		 end  
 
-        if (pack_cnt >= 1 && pack_cnt <= 9) begin
+        if (pack_cnt >= 1 && pack_cnt <= (DATA_NUM - 3)) begin
             crc8_en <= 1'b1;
         end
         else begin
@@ -235,9 +235,9 @@ always @(posedge sys_clk or posedge sys_rst_n) begin      //接收到数�?????
         end
 
         // Check CRC at byte 10 (index 10)
-        // if (pack_cnt == 10) begin
-        //     crc_valid <= (pack_data[10] == crc8_value);
-        // end
+        if (pack_cnt == (DATA_NUM - 2)) begin
+            crc_valid <= (pack_data[DATA_NUM - 2] == crc8_value);
+        end
 	 end
 	 else begin
 		  pack_cnt <=pack_cnt;
@@ -300,7 +300,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
         rev_data11 <= 8'd0;
     end  
 	 else if(packdone_flag) begin //数据接收完成，进行解�?????
-		 if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa)) begin  //判断数据正误
+		 if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) &&(pack_data[DATA_NUM - 2]==crc8_value) ) begin  //判断数据正误
 			//  reg_func  <=pack_data[1];
              recv_done <=1'b1;
             // case (pack_data[1]) //解码数据

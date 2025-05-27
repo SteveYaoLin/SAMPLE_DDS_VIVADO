@@ -93,7 +93,7 @@ initial begin
     uart_send_byte(8'h00);  // PAT
     uart_send_byte(8'h00);  // PAT
     uart_send_byte(8'hff);  // PAT
-    uart_send_byte(8'h0c);  // CRC
+    uart_send_byte(8'h1a);  // CRC
     uart_send_byte(8'haa);  // 假设包尾		
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
@@ -101,7 +101,7 @@ initial begin
 	$display("The 1st package...");	
 	uart_send_byte(8'h55);  // 假设包头
     uart_send_byte(8'h01);  // reg_func
-    uart_send_byte(8'h01);  // hs_pwm_ch
+    uart_send_byte(8'h02);  // hs_pwm_ch
     uart_send_byte(8'h01);  // hs_ctrl_sta
     uart_send_byte(8'hff);  // duty_num
     uart_send_byte(8'h07);  // pulse_dessert H
@@ -111,7 +111,7 @@ initial begin
     uart_send_byte(8'hff);  // PAT
     uart_send_byte(8'hff);  // PAT
     uart_send_byte(8'hff);  // PAT
-    uart_send_byte(8'h0c);  // CRC
+    uart_send_byte(8'h24);  // CRC
     uart_send_byte(8'haa );  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
