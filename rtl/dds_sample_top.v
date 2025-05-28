@@ -151,7 +151,7 @@ uart_reg_mapper # (
     ._NUM_CHANNELS(_NUM_CHANNELS)
 )u_uart_reg_mapper(
    /*input wire  */.clk_50M    (clk_50M) ,      // 50MHz时钟输入
-   /*input wire  */.clk_100M   (clk_100M) ,     // 100MHz时钟输入
+   /*input wire  */.clk_100M   (clk_100M_o) ,     // 100MHz时钟输入
    /*input wire  */.rst_n      (rst_n  ) ,
    // UART接口信号
    /*input [7:0] */  .func_reg    (rev_data0   ) ,
