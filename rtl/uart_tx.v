@@ -22,6 +22,7 @@ module uart_tx(
     input               uart_tx_en  , //UART的发送使能
     input     [7:0]     uart_tx_data, //UART要发送的数据
     output  reg         uart_txd    , //UART发送端口
+    output  reg         uart_tx_done , //UART发送完成信号
     output  reg         uart_tx_busy  //发送忙状态信号
     );
 
@@ -44,20 +45,24 @@ always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         tx_data_t <= 8'b0;
         uart_tx_busy <= 1'b0;
+        uart_tx_done <= 1'b0;
     end
     //发送使能时，寄存要发送的数据，并拉高BUSY信号
     else if(uart_tx_en) begin
         tx_data_t <= uart_tx_data;
         uart_tx_busy <= 1'b1;
+        uart_tx_done <= 1'b0; //发送完成信号拉低
     end
     //当计数到停止位结束时，停止发送过程
     else if(tx_cnt == 4'd9 && baud_cnt == BAUD_CNT_MAX - 1) begin
         tx_data_t <= 8'b0;     //清空发送数据寄存器
         uart_tx_busy <= 1'b0;  //并拉低BUSY信号
+        uart_tx_done <= 1'b1;  //拉高发送完成信号
     end
     else begin
         tx_data_t <= tx_data_t;
         uart_tx_busy <= uart_tx_busy;
+        uart_tx_done <= 1'b0; //保持发送完成信号不变
     end
 end
 
