@@ -133,7 +133,7 @@ initial begin
     uart_send_byte(8'hAA );  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
-	#(BIT_PERIOD * 5) ; 	
+	#(BIT_PERIOD * 50) ; 	
 	$display("The 3rd package...");	
 	uart_send_byte(8'h55);  // 假设包头
     uart_send_byte(8'h01);  // reg_func
