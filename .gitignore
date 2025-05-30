@@ -20,6 +20,7 @@
 /prj_lhz_uart_led/prj_lhz_uart_led.srcs/sources_1/bd/system/ui/
 /prj_lhz_uart_led/prj_lhz_uart_led.srcs/sources_1/bd/system/ip/
 /sim/tb/work/*
+/sim/tb/wlf*
 *.xlsx
 *.xls
 /vitis/
