@@ -174,7 +174,7 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         if (pwm_out) begin
 //            dac_data <= {_DAC_WIDTH{1'b1}};
-                dac_data <= {(_DAC_WIDTH-1){1'b1}};
+                dac_data <= {_DAC_WIDTH{1'b1}};
         end
         else begin
 //            dac_data <= {(_DAC_WIDTH-1){1'b1}};
