@@ -80,7 +80,7 @@ initial begin
     
 	// $display("Initialization complete. BAUD_RATE is %d",BAUD_RATE); //命令行显示初始化完成，输出BPS_NUM
 	#BIT_PERIOD; 						//直接延时，一个波特率周期
-	$display("Sending configuration data...");	
+	$display("Sending configuration pwm1...");	
     uart_send_byte(8'h55);  // 假设包头
     uart_send_byte(8'h01);  // reg_func
     uart_send_byte(8'h01);  // hs_pwm_ch
@@ -98,60 +98,78 @@ initial begin
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
 	#(BIT_PERIOD * 50) ; 	
-	$display("The 1st package...");	
+	$display("Enable pwm1...");	
 	uart_send_byte(8'h55);  // 假设包头
-    uart_send_byte(8'h01);  // reg_func
-    uart_send_byte(8'h02);  // hs_pwm_ch
+    uart_send_byte(8'h02);  // reg_func
+    uart_send_byte(8'h01);  // hs_pwm_ch
     uart_send_byte(8'h01);  // hs_ctrl_sta
-    uart_send_byte(8'hff);  // duty_num
-    uart_send_byte(8'h07);  // pulse_dessert H
-    uart_send_byte(8'h30);  // pulse_dessert L
+    uart_send_byte(8'h00);  // duty_num
+    uart_send_byte(8'h00);  // pulse_dessert H
+    uart_send_byte(8'h00);  // pulse_dessert L
 	uart_send_byte(8'h00);  // pulse_num
-    uart_send_byte(8'hff);  // PAT
-    uart_send_byte(8'hff);  // PAT
-    uart_send_byte(8'hff);  // PAT
-    uart_send_byte(8'hff);  // PAT
-    uart_send_byte(8'h24);  // CRC
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h2f);  // CRC
     uart_send_byte(8'haa );  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
 	#(BIT_PERIOD * 50) ; 
-	$display("The second package...");	
+	$display("Enable pwm3 slow pwm...");	
 	uart_send_byte(8'h55);  // 假设包头
     uart_send_byte(8'h02);  // reg_func
-    uart_send_byte(8'h12);  // hs_pwm_ch
-    uart_send_byte(8'h13);  // hs_ctrl_sta
-    uart_send_byte(8'h14);  // duty_num
-    uart_send_byte(8'h15);  // pulse_dessert H
-    uart_send_byte(8'h16);  // pulse_dessert L
-	uart_send_byte(8'h17);  // pulse_num
-    uart_send_byte(8'h18);  // PAT
-    uart_send_byte(8'h19);  // PAT
-    uart_send_byte(8'h1a);  // PAT
-    uart_send_byte(8'h1b);  // PAT
-    uart_send_byte(8'h1c);  // CRC
-    uart_send_byte(8'hAA );  // 假设包尾	
+    uart_send_byte(8'h03);  // hs_pwm_ch
+    uart_send_byte(8'h01);  // hs_ctrl_sta
+    uart_send_byte(8'h00);  // duty_num
+    uart_send_byte(8'h00);  // pulse_dessert H
+    uart_send_byte(8'h00);  // pulse_dessert L
+	uart_send_byte(8'h00);  // pulse_num
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'hff);  // CRC
+    uart_send_byte(8'hAA);  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
 	#(BIT_PERIOD * 50) ; 	
-	$display("The 3rd package...");	
+	$display("disenable pwm3 slow pwm....");	
 	uart_send_byte(8'h55);  // 假设包头
-    uart_send_byte(8'h01);  // reg_func
-    uart_send_byte(8'h22);  // hs_pwm_ch
-    uart_send_byte(8'h23);  // hs_ctrl_sta
-    uart_send_byte(8'h24);  // duty_num
-    uart_send_byte(8'h25);  // pulse_dessert H
-    uart_send_byte(8'h26);  // pulse_dessert L
-	uart_send_byte(8'h27);  // pulse_num
-    uart_send_byte(8'h28);  // PAT
-    uart_send_byte(8'h29);  // PAT
-    uart_send_byte(8'h2a);  // PAT
-    uart_send_byte(8'h2b);  // PAT
-    uart_send_byte(8'h2c);  // CRC
+    uart_send_byte(8'h02);  // reg_func
+    uart_send_byte(8'h03);  // hs_pwm_ch
+    uart_send_byte(8'h00);  // hs_ctrl_sta
+    uart_send_byte(8'h00);  // duty_num
+    uart_send_byte(8'h00);  // pulse_dessert H
+    uart_send_byte(8'h00);  // pulse_dessert L
+	uart_send_byte(8'h00);  // pulse_num
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h86);  // CRC
     uart_send_byte(8'hAA );  // 假设包尾	
 	#BIT_PERIOD ;
 	uart_rxd = 1'b1;	   //串口发送线，默认拉高
-	#(BIT_PERIOD * 5) ; 
+	#(BIT_PERIOD * 50) ; 
+    $display("disable pwm1...");	
+	uart_send_byte(8'h55);  // 假设包头
+    uart_send_byte(8'h02);  // reg_func
+    uart_send_byte(8'h01);  // hs_pwm_ch
+    uart_send_byte(8'h00);  // hs_ctrl_sta
+    uart_send_byte(8'h00);  // duty_num
+    uart_send_byte(8'h00);  // pulse_dessert H
+    uart_send_byte(8'h00);  // pulse_dessert L
+	uart_send_byte(8'h00);  // pulse_num
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h00);  // PAT
+    uart_send_byte(8'h56);  // CRC
+    uart_send_byte(8'hAA);  // 假设包尾	
+	#BIT_PERIOD ;
+	uart_rxd = 1'b1;	   //串口发送线，默认拉高
+	#(BIT_PERIOD * 50) ; 	
 	$stop;		//结束仿真
     
     // #1000;
