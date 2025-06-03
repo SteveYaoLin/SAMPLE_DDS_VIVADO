@@ -2,6 +2,7 @@ module uart_protocol_tx (
     input clk_50M,
     input rst_n,
     input recv_done,
+    input [7:0] rev_data0,
     input [7:0] rev_data1,
     input [7:0] rev_data2,
     input [7:0] rev_data3,
