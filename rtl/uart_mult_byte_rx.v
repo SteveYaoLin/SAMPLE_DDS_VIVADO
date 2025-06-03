@@ -23,8 +23,8 @@ module uart_mult_byte_rx(
      output  reg [7:0]     rev_data7   ,
      output  reg [7:0]     rev_data8   ,
      output  reg [7:0]     rev_data9   ,
-     output  reg [7:0]     rev_data10  ,
-     output  reg [7:0]     rev_data11 
+     output  reg [7:0]     rev_data10  
+    //  output  reg [7:0]     rev_data11 
     );
     
 localparam  DATA_NUM = 14;
@@ -297,11 +297,11 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
         rev_data8  <= 8'd0;
         rev_data9  <= 8'd0;
         rev_data10 <= 8'd0;
-        rev_data11 <= 8'd0;
+        // rev_data11 <= 8'd0;
     end  
 	 else if(packdone_flag) begin //数据接收完成，进行解�?????
-		 if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
-         //if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) &&(pack_data[DATA_NUM - 2]==crc8_value) ) begin  //判断数据正误
+		 //if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
+         if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) &&(pack_data[DATA_NUM - 2]==crc8_value) ) begin  //判断数据正误
 			//  reg_func  <=pack_data[1];
              recv_done <=1'b1;
             // case (pack_data[1]) //解码数据
@@ -326,7 +326,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
                     rev_data8       <= pack_data[9]; //数据�????4 5
                     rev_data9       <= pack_data[10]; //数据�????6
                     rev_data10      <= pack_data[11]; //数据�????7 8 9 10
-                    rev_data11      <= pack_data[12]; //数据�????7 8 9 10
+                    // rev_data11      <= pack_data[12]; //数据�????7 8 9 10
 
                 // end
                 // 8'h02 : begin
@@ -364,7 +364,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
             rev_data8       <=  rev_data8 ;
             rev_data9       <=  rev_data9 ;
             rev_data10      <=  rev_data10;
-            rev_data11      <=  rev_data11;
+            // rev_data11      <=  rev_data11;
 		 end
 	 end
 	 else begin //数据保持到下�?????个周期，标志位保持一个周�?????
@@ -380,7 +380,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
             rev_data8       <=  rev_data8 ;
             rev_data9       <=  rev_data9 ;
             rev_data10      <=  rev_data10;
-            rev_data11      <=  rev_data11;
+            // rev_data11      <=  rev_data11;
 	 end	 
 end
 // CRC8 module instantiation
