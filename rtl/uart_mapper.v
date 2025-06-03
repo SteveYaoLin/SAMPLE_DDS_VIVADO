@@ -44,7 +44,7 @@ reg [7:0]   duty_num          [_NUM_CHANNELS-1:0];  // 占空比周期数
 reg [15:0]  pulse_dessert     [_NUM_CHANNELS-1:0];  // 脉冲间隔
 reg [7:0]   pulse_num         [_NUM_CHANNELS-1:0];  // 脉冲次数
 reg [31:0]  PAT               [_NUM_CHANNELS-1:0];  // 模式寄存�????????
-reg [7:0]   ls_ctrl_sta       [_NUM_CHANNELS-1:0]; // 当前通道控制状�??
+reg [7:0]   ls_ctrl_sta       [_NUM_CHANNELS:0]; // 当前通道控制状�??
 reg [7:0]   hs_pwm_ch                           ; // 当前通道�????????
 reg [7:0]   ls_pwm_ch                           ; // 当前通道�????????
 reg div_half ;
@@ -68,6 +68,7 @@ always @(posedge clk_50M or negedge rst_n) begin
         // 寄存器初始化
         hs_pwm_ch       <= 8'h00; // 当前通道�????????
         ls_pwm_ch       <= 8'h00; // 当前通道�????????
+        ls_ctrl_sta[_NUM_CHANNELS] <= 8'h00;
         // Initialize all channels
 //        integer j;
        for (j = 0; j < _NUM_CHANNELS; j = j + 1) begin
@@ -89,7 +90,7 @@ always @(posedge clk_50M or negedge rst_n) begin
             // 通道号更�????????
             ls_pwm_ch       <= rev_data1;
         end
-        // 通道号有效�?�检�????????
+        // low channel is high speed pwm
         if (rev_data1 < _NUM_CHANNELS) begin
             // 寄存器更新（按需添加更多寄存器）
             case (func_reg[7:0])
@@ -126,6 +127,12 @@ always @(posedge clk_50M or negedge rst_n) begin
             // pulse_dessert[hs_pwm_ch] <= pulse_dessert;
             // pulse_num[hs_pwm_ch]     <= pulse_num;
             // PAT[hs_pwm_ch]           <= PAT;
+        end
+        // higher bit is slow pwm
+        else if (rev_data1 == _NUM_CHANNELS) begin
+            if (func_reg == 8'h02) begin
+                ls_ctrl_sta[rev_data1] <= rev_data2;
+            end
         end
     end
 end
@@ -182,7 +189,7 @@ pattern_ad9748 #(
 //     .dac_data     ( dac_data  )       // DAC数据输出   
 // );
 //hs_ctrl_sta
-assign pwm_out[_NUM_CHANNELS] =  ls_ctrl_sta[ls_pwm_ch][0]; // 使用ls_ctrl_sta的bit0作为使能
+assign pwm_out[_NUM_CHANNELS] =  ls_ctrl_sta[3][0]; // 使用ls_ctrl_sta的bit0作为使能
 
 always @(posedge clk_100M or negedge rst_n) begin
     if (!rst_n) begin
