@@ -318,11 +318,26 @@ OBUFDS obufds_inst1 (
    .OB(adc_clk_n), // 差分信号负端
    .I(clk_100M_o)     // 单端信号输入
 );
+// 使用 ODDR 原语保证输出同步
+wire diff_data;
+ODDR #(
+    .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
+    .INIT(1'b0),                     // 初始值
+    .SRTYPE("SYNC")                  // 同步置位/复位
+) ODDR_inst (
+    .Q(diff_data),     // 输出数据
+    .C(clk_100M_o),       // 时钟输入
+    .CE(1'b1),         // 时钟使能
+    .D1(1'b1),         // 正沿数据
+    .D2(1'b0),         // 负沿数据
+    .R(~rst_n),      // 复位
+    .S(1'b0)           // 置位
+);
 
 OBUFDS obufds_inst2 (
     .O(dds_clk0_p),  // 差分信号正端
     .OB(dds_clk0_n), // 差分信号负端
-    .I(clk_100M_o)     // 单端信号输入
+    .I(diff_data)     // 单端信号输入
 );
 // assign pwm_port = pwm_out[0] ; // 直接连接到引�???????????
 // ila_0 u_ila_0(

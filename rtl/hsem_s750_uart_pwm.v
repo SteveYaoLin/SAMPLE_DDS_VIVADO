@@ -197,13 +197,35 @@ OBUF #(
      .OB(pwm_diff_port_n), // 差分信号负端
      .I(pwm_out[1])     // 单端信号输入
  );
-
-
-OBUFDS obufds_inst1 (
-   .O(adc_clk_p),  // 差分信号正端
-   .OB(adc_clk_n), // 差分信号负端
-   .I(clk_100M_o)     // 单端信号输入
+ // 使用 ODDR 原语保证输出同步
+wire diff_data;
+ODDR #(
+    .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
+    .INIT(1'b0),                     // 初始值
+    .SRTYPE("SYNC")                  // 同步置位/复位
+) ODDR_inst (
+    .Q(diff_data),     // 输出数据
+    .C(clk_100M_o),       // 时钟输入
+    .CE(1'b1),         // 时钟使能
+    .D1(1'b1),         // 正沿数据
+    .D2(1'b0),         // 负沿数据
+    .R(~rst_n),      // 复位
+    .S(1'b0)           // 置位
 );
+// 差分输出缓冲器
+OBUFDS #(
+    // .IOSTANDARD("LVDS_25"),         // I/O 标准
+    .SLEW("SLOW")                   // 控制压摆率
+) OBUFDS_inst (
+    .O(adc_clk_p),          // 差分正端输出
+    .OB(adc_clk_n),         // 差分负端输出
+    .I(diff_data)        // 来自 ODDR 的数据
+);
+// OBUFDS obufds_inst1 (
+//    .O(adc_clk_p),  // 差分信号正端
+//    .OB(adc_clk_n), // 差分信号负端
+//    .I(clk_100M_o)     // 单端信号输入
+// );
 
 assign led = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
 // assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�??????????
