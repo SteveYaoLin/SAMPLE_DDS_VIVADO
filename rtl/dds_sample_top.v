@@ -21,8 +21,8 @@ module dds_sample_top # (
     output wire led,        // LED drive signal H 15
     output ad9748_sleep, // Sleep control signal for AD9748
     output pwm_port,
-   output adc_clk_p,
-   output adc_clk_n,
+    output adc_clk_p,
+    output adc_clk_n,
     output pwm_slow_port,
     output pwm_diff_port_n,
     output pwm_diff_port_p,
