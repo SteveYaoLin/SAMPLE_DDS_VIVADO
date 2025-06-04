@@ -85,14 +85,14 @@ initial begin
     uart_send_byte(8'h01);  // reg_func
     uart_send_byte(8'h01);  // hs_pwm_ch
     uart_send_byte(8'h01);  // hs_ctrl_sta
-    uart_send_byte(8'h03);  // duty_num
-    uart_send_byte(8'h00);  // pulse_dessert H
-    uart_send_byte(8'h44);  // pulse_dessert L
+    uart_send_byte(8'h01);  // duty_num
+    uart_send_byte(8'h01);  // pulse_dessert H
+    uart_send_byte(8'h00);  // pulse_dessert L
 	uart_send_byte(8'h00);  // pulse_num
     uart_send_byte(8'h00);  // PAT
     uart_send_byte(8'h00);  // PAT
     uart_send_byte(8'h00);  // PAT
-    uart_send_byte(8'hff);  // PAT
+    uart_send_byte(8'h01);  // PAT
     uart_send_byte(8'h1a);  // CRC
     uart_send_byte(8'haa);  // 假设包尾		
 	#BIT_PERIOD ;
