@@ -97,7 +97,7 @@ always @(posedge clk or negedge rst_n) begin
                     valid <= 1'b1;
                 end
                 else begin
-                    if (duty_cnt < duty_num) begin
+                    if (duty_cnt < (duty_num-1'b1)) begin
                         duty_cnt <= duty_cnt + 1'b1;
                     end
                     else begin
@@ -127,7 +127,7 @@ always @(posedge clk or negedge rst_n) begin
                     valid <= 1'b1;
                 end
                 else begin
-                    if (wait_cnt < pulse_dessert) begin
+                    if (wait_cnt < (pulse_dessert - 1'b1)) begin
                         wait_cnt <= wait_cnt + 1'b1;
                     end
                     else begin

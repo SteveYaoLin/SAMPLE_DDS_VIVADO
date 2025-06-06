@@ -300,8 +300,8 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
         // rev_data11 <= 8'd0;
     end  
 	 else if(packdone_flag) begin //数据接收完成，进行解�?????
-		 if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
-        //  if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) &&(pack_data[DATA_NUM - 2]==crc8_value) ) begin  //判断数据正误
+		//  if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
+         if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) &&(pack_data[DATA_NUM - 2]==crc8_value) ) begin  //判断数据正误
 			//  reg_func  <=pack_data[1];
              recv_done <=1'b1;
             // case (pack_data[1]) //解码数据

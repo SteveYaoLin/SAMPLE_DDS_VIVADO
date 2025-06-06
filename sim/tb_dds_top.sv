@@ -128,7 +128,7 @@ initial begin
         8'h00,  // PAT
         8'h00,  // PAT
         8'h01,  // PAT
-        8'h33,  // CRC
+        8'hf2,  // CRC
         8'haa   // 假设包尾
     );
 	#(BIT_PERIOD * 50) ; 	
