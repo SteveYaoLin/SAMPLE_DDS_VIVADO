@@ -1,8 +1,9 @@
 //uart_mapper
 module uart_reg_mapper #(
-    parameter _NUM_CHANNELS = 3,        // �????????大PWM通道数量
+    parameter _NUM_CHANNELS = 3,        // �?????????大PWM通道数量
+    parameter _NUM_SLOW_CH  = 1,        // 慢PWM通道数量
     parameter _DAC_WIDTH    = 8,        // 每个通道的寄存器数量
-    parameter _PAT_WIDTH    = 32        // 匹配PAT寄存器宽�????????
+    parameter _PAT_WIDTH    = 32        // 匹配PAT寄存器宽�?????????
 )(
     input wire          clk_50M,
     input wire          clk_100M,
@@ -21,7 +22,7 @@ module uart_reg_mapper #(
     input [7:0]     rev_data10 ,
     // input [7:0]     rev_data11 ,
 
-    input           pack_done,     // 数据包接收完成标�????????
+    input           pack_done,     // 数据包接收完成标�?????????
     
     // PWM通道接口
     // output [7:0]   hs_ctrl_sta       [_NUM_CHANNELS-1:0], 
@@ -33,23 +34,23 @@ module uart_reg_mapper #(
     // output [7:0]   hs_pwm_ch                           , 
     // output [7:0]   ls_pwm_ch                            
     output wire [_DAC_WIDTH - 1:0 ] dac_data, // 控制状�?�寄存器
-    output wire [_NUM_CHANNELS:0] pwm_out,    // PWM输出总线
+    output wire [(_NUM_CHANNELS + _NUM_SLOW_CH -1):0] pwm_out,    // PWM输出总线
     output wire [_NUM_CHANNELS-1:0] pwm_busy,   // 忙状态�?�线
     output wire [_NUM_CHANNELS-1:0] pwm_valid   // 有效标志总线
 );
-
+// localparam _NUM_HIGH_CYCLES = _NUM_CHANNELS - 1; // 高速PWM通道数量
 // 寄存器组定义
 reg [7:0]   hs_ctrl_sta       [_NUM_CHANNELS-1:0];  // 控制状�?�寄存器
 reg [7:0]   duty_num          [_NUM_CHANNELS-1:0];  // 占空比周期数
 reg [15:0]  pulse_dessert     [_NUM_CHANNELS-1:0];  // 脉冲间隔
 reg [7:0]   pulse_num         [_NUM_CHANNELS-1:0];  // 脉冲次数
-reg [31:0]  PAT               [_NUM_CHANNELS-1:0];  // 模式寄存�????????
-reg [7:0]   ls_ctrl_sta       [_NUM_CHANNELS:0]; // 当前通道控制状�??
-reg [7:0]   hs_pwm_ch                           ; // 当前通道�????????
-reg [7:0]   ls_pwm_ch                           ; // 当前通道�????????
+reg [31:0]  PAT               [_NUM_CHANNELS-1:0];  // 模式寄存�?????????
+reg [7:0]   ls_ctrl_sta       [(_NUM_CHANNELS + _NUM_SLOW_CH -1):0]; // 当前通道控制状�??
+reg [7:0]   hs_pwm_ch                           ; // 当前通道�?????????
+reg [7:0]   ls_pwm_ch                           ; // 当前通道�?????????
 reg div_half ;
 reg [_DAC_WIDTH - 1:0 ] test_dac_data;
-// 寄存器写入控�????????
+// 寄存器写入控�?????????
 
 //  genvar i;
 //       generate
@@ -66,8 +67,8 @@ integer j;
 always @(posedge clk_50M or negedge rst_n) begin
     if (!rst_n) begin
         // 寄存器初始化
-        hs_pwm_ch       <= 8'h00; // 当前通道�????????
-        ls_pwm_ch       <= 8'h00; // 当前通道�????????
+        hs_pwm_ch       <= 8'h00; // 当前通道�?????????
+        ls_pwm_ch       <= 8'h00; // 当前通道�?????????
         ls_ctrl_sta[_NUM_CHANNELS] <= 8'h00;
         // Initialize all channels
 //        integer j;
@@ -83,11 +84,11 @@ always @(posedge clk_50M or negedge rst_n) begin
     end 
     else if (pack_done) begin
         if(func_reg == 8'h01) begin
-            // 通道号更�????????
+            // 通道号更�?????????
             hs_pwm_ch       <= rev_data1;
         end 
         else if (func_reg == 8'h02) begin
-            // 通道号更�????????
+            // 通道号更�?????????
             ls_pwm_ch       <= rev_data1;
         end
         // low channel is high speed pwm
@@ -95,7 +96,7 @@ always @(posedge clk_50M or negedge rst_n) begin
             // 寄存器更新（按需添加更多寄存器）
             case (func_reg[7:0])
                 8'h01: begin
-                    // 控制寄存器更�????????
+                    // 控制寄存器更�?????????
                     // hs_ctrl_sta[rev_data1]   <= rev_data2 ;
                     duty_num[rev_data1]      <= rev_data3 ;
                     pulse_dessert[rev_data1] <= {rev_data4, rev_data5} ;
@@ -115,11 +116,11 @@ always @(posedge clk_50M or negedge rst_n) begin
                 //     pulse_num[hs_pwm_ch] <= rev_data1;
                 // end
                 // 8'h05: begin
-                //     // 模式寄存器更�????????
+                //     // 模式寄存器更�?????????
                 //     PAT[hs_pwm_ch] <= {rev_data4, rev_data3, rev_data2, rev_data1};
                 // end
                 default: begin
-                    // 无效操作，保持原值不�????????
+                    // 无效操作，保持原值不�?????????
                 end
             endcase
             // hs_ctrl_sta[hs_pwm_ch]   <= hs_ctrl_sta;
@@ -129,7 +130,7 @@ always @(posedge clk_50M or negedge rst_n) begin
             // PAT[hs_pwm_ch]           <= PAT;
         end
         // higher bit is slow pwm
-        else if (rev_data1 == _NUM_CHANNELS) begin
+        else if (_NUM_CHANNELS <= rev_data1 <= (_NUM_CHANNELS +_NUM_SLOW_CH - 1)) begin
             if (func_reg == 8'h02) begin
                 ls_ctrl_sta[rev_data1] <= rev_data2;
             end
@@ -137,10 +138,10 @@ always @(posedge clk_50M or negedge rst_n) begin
     end
 end
 
- //PWM通道实例�????????
+ //PWM通道实例�?????????
  generate
      genvar i;
-     for (i = 0; i < 2; i = i + 1) begin : pwm_gen
+     for (i = 0; i < (_NUM_CHANNELS - 1); i = i + 1) begin : pwm_gen
          pattern_pwm #(
              ._PAT_WIDTH(_PAT_WIDTH)
          ) pwm_inst (
@@ -160,7 +161,7 @@ end
  endgenerate
 
 pattern_ad9748 #(
-    ._PAT_WIDTH(_PAT_WIDTH),    // 模式寄存器宽�??????????
+    ._PAT_WIDTH(_PAT_WIDTH),    // 模式寄存器宽�???????????
     ._DAC_WIDTH(_DAC_WIDTH)     // DAC数据宽度
 ) pwm_dac (
     .clk(clk_100M),
@@ -189,11 +190,11 @@ pattern_ad9748 #(
 //     .dac_data     ( dac_data  )       // DAC数据输出   
 // );
 //hs_ctrl_sta
-assign pwm_out[_NUM_CHANNELS] =  ls_ctrl_sta[3][0]; // 使用ls_ctrl_sta的bit0作为使能
+assign pwm_out[_NUM_CHANNELS + 0] =  ls_ctrl_sta[_NUM_CHANNELS][0]; // 使用ls_ctrl_sta的bit0作为使能
 
 always @(posedge clk_100M or negedge rst_n) begin
     if (!rst_n) begin
-        div_half <= 0; // 初始化DAC数据寄存�?????
+        div_half <= 0; // 初始化DAC数据寄存�??????
     end else begin
         // 根据当前通道的控制寄存器状�?�更新DAC数据
         div_half <= ~div_half; // 50MHz时钟下的分频
