@@ -89,7 +89,7 @@ wire    [7:0]     rev_data8  ;
 wire    [7:0]     rev_data9  ;
 wire    [7:0]     rev_data10 ;
 // wire    [7:0]     rev_data11 ;
-
+wire [7:0] response_data; // Response data output
 
 
 // wire [31:0] slow_drive;
@@ -138,7 +138,8 @@ uart_mult_byte_rx u_uart_rx_inst (
     .rev_data7  (rev_data7   ),
     .rev_data8  (rev_data8   ),
     .rev_data9  (rev_data9   ),
-    .rev_data10 (rev_data10  )
+    .rev_data10 (rev_data10  ),
+    .response_data(response_data)
     // .rev_data11 (rev_data11  ) 
     // .hs_pwm_ch    (hs_pwm_ch    ),
 	// .hs_ctrl_sta  (hs_ctrl_sta  ),
@@ -202,6 +203,7 @@ uart_protocol_tx u_uart_protocol_tx(
                     .rev_data8   (rev_data8   ) ,
                     .rev_data9   (rev_data9   ) ,
                     .rev_data10  (rev_data10  ) ,
+                    .response_data(response_data),
                             //uart_tx_crc8
     /*output      */.uart_txd (uart_txd )
     );
@@ -328,13 +330,19 @@ OBUF #(
 );
 
 wire diff_pwm;
+wire diff_pwm_bufg;
+/*          DIFF_PWM1 output            */
+BUFG bufg_inst2 (
+    .I(pwm_out[1]),
+    .O(diff_pwm_bufg)
+);
 ODDR #(
     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
     .INIT(1'b0),                     // 初始�??
     .SRTYPE("SYNC")                  // 同步置位/复位
 ) ODDR_inst2 (
     .Q(diff_pwm),     // 输出数据
-    .C(pwm_out[1]),       // 时钟输入
+    .C(diff_pwm_bufg),       // 时钟输入
     .CE(1'b1),         // 时钟使能
     .D1(1'b1),         // 正沿数据
     .D2(1'b0),         // 负沿数据
@@ -362,31 +370,58 @@ ODDR #(
 //    .R(~rst_n),      // 复位
 //    .S(1'b0)           // 置位
 //);
-OBUFDS obufds_inst1 (
-   .O(adc_clk_p),  // 差分信号正端
-   .OB(adc_clk_n), // 差分信号负端
-   .I(clk_100M_o)     // 单端信号输入
+wire clk_100M_bufg;
+wire clk_100M_oddr;
+/*       DAC clock output            */
+BUFG bufg_inst1 (
+    .I(clk_100M_o),
+    .O(clk_100M_bufg)
 );
-// 使用 ODDR 原语保证输出同步
-wire dds_clk;
 ODDR #(
     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
     .INIT(1'b0),                     // 初始�??
     .SRTYPE("SYNC")                  // 同步置位/复位
-) ODDR_inst0 (
-    .Q(dds_clk),     // 输出数据
-    .C(clk_100M_o),       // 时钟输入
+) ODDR_inst1 (
+    .Q(clk_100M_oddr),     // 输出数据
+    .C(clk_100M_bufg),       // 时钟输入
     .CE(1'b1),         // 时钟使能
     .D1(1'b1),         // 正沿数据
     .D2(1'b0),         // 负沿数据
     .R(~rst_n),      // 复位
     .S(1'b0)           // 置位
 );
+OBUFDS obufds_inst1 (
+   .O(adc_clk_p),  // 差分信号正端
+   .OB(adc_clk_n), // 差分信号负端
+   .I(clk_100M_o)     // 单端信号输入
+);
+
+/*          DDS clock output            */
+// 使用 ODDR 原语保证输出同步
+wire dds_clk;
+wire dds_clk_bufg;
+// BUFG bufg_inst0 (
+//     .I(clk_100M_o),
+//     .O(dds_clk_bufg)
+// );
+// ODDR #(
+//     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
+//     .INIT(1'b0),                     // 初始�??
+//     .SRTYPE("SYNC")                  // 同步置位/复位
+// ) ODDR_inst0 (
+//     .Q(dds_clk),     // 输出数据
+//     .C(dds_clk_bufg),       // 时钟输入
+//     .CE(1'b1),         // 时钟使能
+//     .D1(1'b1),         // 正沿数据
+//     .D2(1'b0),         // 负沿数据
+//     .R(~rst_n),      // 复位
+//     .S(1'b0)           // 置位
+// );
 
 OBUFDS obufds_inst2 (
     .O(dds_clk0_p),  // 差分信号正端
     .OB(dds_clk0_n), // 差分信号负端
-    .I(dds_clk)     // 单端信号输入
+    .I(1'b0)     // 单端信号输入
 );
 // assign pwm_port = pwm_out[0] ; // 直接连接到引�?????????????
 // ila_0 u_ila_0(

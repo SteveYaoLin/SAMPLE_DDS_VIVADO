@@ -13,6 +13,7 @@ module uart_protocol_tx (
     input [7:0]     rev_data8  ,
     input [7:0]     rev_data9  ,
     input [7:0]     rev_data10 ,
+    input [7:0]     response_data ,
     output uart_txd
 );
 
@@ -107,7 +108,7 @@ always @(*) begin
         3'd0: uart_tx_data = 8'h80;
         3'd1: uart_tx_data = rev_data0;
         3'd2: uart_tx_data = rev_data1;
-        3'd3: uart_tx_data = rev_data2;
+        3'd3: uart_tx_data = response_data;
         3'd4: uart_tx_data = uart_tx_crc8;
         3'd5: uart_tx_data = 8'h55;
         default: uart_tx_data = 8'h00;

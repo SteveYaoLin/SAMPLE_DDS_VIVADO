@@ -23,8 +23,8 @@ module uart_mult_byte_rx(
      output  reg [7:0]     rev_data7   ,
      output  reg [7:0]     rev_data8   ,
      output  reg [7:0]     rev_data9   ,
-     output  reg [7:0]     rev_data10  
-    //  output  reg [7:0]     rev_data11 
+     output  reg [7:0]     rev_data10  ,
+     output  reg [7:0]     response_data // 响应数据寄存器 
     );
     
 localparam  DATA_NUM = 14;
@@ -298,23 +298,15 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
         rev_data9  <= 8'd0;
         rev_data10 <= 8'd0;
         // rev_data11 <= 8'd0;
+        response_data <= 8'h00; // 响应数据寄存器清零
     end  
 	 else if(packdone_flag) begin //数据接收完成，进行解�?????
 		//  if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
-         if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) &&(pack_data[DATA_NUM - 2]==crc8_value) ) begin  //判断数据正误
-			//  reg_func  <=pack_data[1];
-             recv_done <=1'b1;
-            // case (pack_data[1]) //解码数据
-                // 8'h01 : begin
-                    // rev_data0       <= pack_data[2]; //数据�????1
-                    // rev_data1       <= pack_data[3]; //数据�????2
-                    // rev_data2       <= pack_data[4]; //数据�????3
-                    // rev_data3       <= {pack_data[5],pack_data[6]}; //数据�????4 5
-                    // rev_data4       <= pack_data[7]; //数据�????6
-                    // rev_data5       <= {pack_data[8],pack_data[9],pack_data[10],pack_data[11]}; //数据�????7 8 9 10
-                    // rev_data6       <= pack_data[2]; //数据�????2
-                    // rev_data7       <= pack_data[3]; //数据�????3
-                    
+         if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
+            if(pack_data[DATA_NUM - 2]==crc8_value) begin
+                response_data <= 8'h01;
+                recv_done <=1'b1;
+
                     rev_data0       <= pack_data[1]; //数据�????1
                     rev_data1       <= pack_data[2]; //数据�????2
                     rev_data2       <= pack_data[3]; //数据�????3
@@ -326,32 +318,10 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
                     rev_data8       <= pack_data[9]; //数据�????4 5
                     rev_data9       <= pack_data[10]; //数据�????6
                     rev_data10      <= pack_data[11]; //数据�????7 8 9 10
-                    // rev_data11      <= pack_data[12]; //数据�????7 8 9 10
-
-                // end
-                // 8'h02 : begin
-                    
-                // end
-                
-                // default: begin
-                //     rev_data0       <= rev_data0      ;
-                //     rev_data1     <= rev_data1    ;
-                //     rev_data2        <= rev_data2       ;
-                //     rev_data3   <= rev_data3  ;
-                //     rev_data4       <= rev_data4      ;
-                //     rev_data5             <= rev_data5            ;
-                //     rev_data6       <= rev_data6      ;
-                //     rev_data7     <= rev_data7    ;
-                // end
-            // endcase
-            //  dataD <=pack_data[6];
-            //  dataD <=pack_data[1];
-			//  dataB <= {8'h0b,pack_data[2]};
-			//  dataC <= {pack_data[12],pack_data[11]};
-			 
-		 end  
-		 else begin //数据错误
-            
+                    // rev_data11      <= pack_data[12]; //数据�????7 8 9 10 
+            end
+            else begin
+                response_data <= 8'h04;
             recv_done <=1'b0;
             rev_data0       <=  rev_data0 ;
             rev_data1       <=  rev_data1 ;
@@ -365,6 +335,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
             rev_data9       <=  rev_data9 ;
             rev_data10      <=  rev_data10;
             // rev_data11      <=  rev_data11;
+
 		 end
 	 end
 	 else begin //数据保持到下�?????个周期，标志位保持一个周�?????
@@ -381,7 +352,9 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
             rev_data9       <=  rev_data9 ;
             rev_data10      <=  rev_data10;
             // rev_data11      <=  rev_data11;
+            response_data <= response_data;
 	 end	 
+    end
 end
 // CRC8 module instantiation
 crc8 u_crc8 (
