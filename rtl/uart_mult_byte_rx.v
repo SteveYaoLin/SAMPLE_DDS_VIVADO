@@ -303,10 +303,7 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
 	 else if(packdone_flag) begin //数据接收完成，进行解�?????
 		//  if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
          if((pack_num==DATA_NUM) && (pack_data[0]==8'h55) &&(pack_data[DATA_NUM - 1]==8'haa) ) begin  //判断数据正误
-            if(pack_data[DATA_NUM - 2]==crc8_value) begin
-                response_data <= 8'h01;
                 recv_done <=1'b1;
-
                     rev_data0       <= pack_data[1]; //数据�????1
                     rev_data1       <= pack_data[2]; //数据�????2
                     rev_data2       <= pack_data[3]; //数据�????3
@@ -319,9 +316,15 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
                     rev_data9       <= pack_data[10]; //数据�????6
                     rev_data10      <= pack_data[11]; //数据�????7 8 9 10
                     // rev_data11      <= pack_data[12]; //数据�????7 8 9 10 
-            end
+                if(pack_data[DATA_NUM - 2]==crc8_value) begin
+                    response_data <= 8'h01;
+                end
+                else begin
+                    response_data <= 8'h04; // CRC校验失败
+                end
+            end 
             else begin
-                response_data <= 8'h04;
+            response_data <= 8'hff;
             recv_done <=1'b0;
             rev_data0       <=  rev_data0 ;
             rev_data1       <=  rev_data1 ;
@@ -354,7 +357,6 @@ always @(posedge sys_clk or posedge sys_rst_n) begin
             // rev_data11      <=  rev_data11;
             response_data <= response_data;
 	 end	 
-    end
 end
 // CRC8 module instantiation
 crc8 u_crc8 (

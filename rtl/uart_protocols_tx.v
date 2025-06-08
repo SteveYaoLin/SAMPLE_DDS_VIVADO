@@ -236,6 +236,6 @@ endmodule
 //     .uart_tx_en    (uart_tx_en),
 //     .uart_tx_data  (uart_tx_data),
 //     .uart_txd      (uart_txd),
-//     .uart_tx_done  (uart_tx_done), // 拉高发�?�完成信�?
+//     .uart_tx_done  (uart_tx_done), // 拉高发�?�完成信�??
 //     .uart_tx_busy  (uart_tx_busy)
 // );
