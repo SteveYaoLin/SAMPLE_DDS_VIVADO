@@ -1,6 +1,6 @@
 module hsem_s750_uart_pwm # (
-    parameter _PAT_WIDTH = 32 ,   // 模式寄存器宽�???????????
-    parameter _NUM_CHANNELS = 6,        // �?????????大PWM通道数量
+    parameter _PAT_WIDTH = 32 ,   // 模式寄存器宽�????????????
+    parameter _NUM_CHANNELS = 6,        // �??????????大PWM通道数量
     parameter _NUM_SLOW_CH = 1, 
     parameter _DAC_WIDTH = 8      // DAC数据宽度
 )
@@ -8,17 +8,17 @@ module hsem_s750_uart_pwm # (
     input wire sys_clk,          // System clock input U18
     input wire sys_rst,        // Active low reset input
     input wire uart_rxd,         // UART RXD input T19
-    output [_DAC_WIDTH-1:0]   dac_data,//fmc bus
+    // output [_DAC_WIDTH-1:0]   dac_data,//fmc bus
     output wire led,        // LED drive signal H 15
     // output ad9748_sleep, // Sleep control signal for AD9748
-    output pwm_port,
+    // output pwm_port,
     output adc_clk_p,  //not mcmm
     output adc_clk_n,
     output dds_clk0_p,//mcmm
     output dds_clk0_n,
     output pwm_slow_port,
-    output pwm_diff_port_n,
-    output pwm_diff_port_p,
+    output [_NUM_CHANNELS - 1 :0] pwm_diff_port_n,
+    output [_NUM_CHANNELS - 1 :0] pwm_diff_port_p,
     output wire uart_txd //J15
 
 );
@@ -131,7 +131,7 @@ uart_reg_mapper # (
    /*input [7:0] */  .rev_data9   (rev_data9   ) ,
    /*input [7:0] */  .rev_data10  (rev_data10  ) ,
 //    /*input [7:0] */  .rev_data11  (rev_data11  ) ,
-   /*input       */  .pack_done   (pack_done   ) ,     // 数据包接收完成标�?????????    
+   /*input       */  .pack_done   (pack_done   ) ,     // 数据包接收完成标�??????????    
    /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data (dac_data ),         
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_out  (pwm_out  ),    // PWM输出总线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_busy (pwm_busy ),   // 忙状态�?�线
@@ -171,56 +171,92 @@ breath_led u_breath_led(
 //    .SRTYPE("SYNC")                  // 同步复位类型
 // ) ODDR_inst (
 //    .Q(pwm_port),    // 输出到IO的PWM信号
-//    .C(clk_50m),     // 50MHz时钟输入（需与PWM逻辑同步�???????????????
+//    .C(clk_50m),     // 50MHz时钟输入（需与PWM逻辑同步�????????????????
 //    .CE(1'b1),       // 始终使能
-//    .D1(pwm_out[0]),  // 内部生成的PWM逻辑（高电平�???????????????
-//    .D2(1'b0),  // 与D1相同，确保单沿输�???????????????
-//    .R(1'b0),        // 无复�???????????????
-//    .S(1'b0)         // 无置�???????????????
+//    .D1(pwm_out[0]),  // 内部生成的PWM逻辑（高电平�????????????????
+//    .D2(1'b0),  // 与D1相同，确保单沿输�????????????????
+//    .R(1'b0),        // 无复�????????????????
+//    .S(1'b0)         // 无置�????????????????
+// );
+
+// OBUF #(
+//    .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
+//    .IOSTANDARD("LVCMOS33"), // I/O电平标准
+//    .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�????????????????
+// ) OBUF_fast_sig (
+//    .O(pwm_port),      // 实际引脚（B35_L19_P�????????????????
+//    .I(pwm_out[0])      // 来自ODDR的输�????????????????
 // );
 
 OBUF #(
    .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
    .IOSTANDARD("LVCMOS33"), // I/O电平标准
-   .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�???????????????
-) OBUF_fast_sig (
-   .O(pwm_port),      // 实际引脚（B35_L19_P�???????????????
-   .I(pwm_out[0])      // 来自ODDR的输�???????????????
-);
-
-OBUF #(
-   .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
-   .IOSTANDARD("LVCMOS33"), // I/O电平标准
-   .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�???????????????
+   .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�????????????????
 ) OBUF_slow_sig (
-   .O(pwm_slow_port),      // 实际引脚（B35_L19_P�???????????????
+   .O(pwm_slow_port),      // 实际引脚（B35_L19_P�????????????????
 //    .I(1'b1)     // 单端信号输入
-   .I(pwm_out[_NUM_CHANNELS])      // 来自ODDR的输�???????????????
+   .I(pwm_out[_NUM_CHANNELS])      // 来自ODDR的输�????????????????
 );
 
-wire diff_pwn;
-ODDR #(
-    .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-    .INIT(1'b0),                     // 初始�??
-    .SRTYPE("SYNC")                  // 同步置位/复位
-) ODDR_inst (
-    .Q(diff_pwn),     // 输出数据
-    .C(pwm_out[1]),       // 时钟输入
-    .CE(1'b1),         // 时钟使能
-    .D1(1'b1),         // 正沿数据
-    .D2(1'b0),         // 负沿数据
-    .R(~rst_n),      // 复位
-    .S(1'b0)           // 置位
-);
+wire [_NUM_CHANNELS - 1 : 0] diff_pwn;
+wire [_NUM_CHANNELS - 1 : 0] diff_pwm_bufg;
+generate
+    genvar i;
+    for (i = 0; i < _NUM_CHANNELS; i = i + 1) begin : pwm_diff_gen
+        BUFG bufg_inst (
+            .I(pwm_out[i]),
+            .O(diff_pwm_bufg[i])
+            );
+        ODDR #(
+            .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
+            .INIT(1'b0),                     // 初始�???
+            .SRTYPE("SYNC")                  // 同步置位/复位
+        ) ODDR_inst0 (
+            .Q(diff_pwn[i]),     // 输出数据
+            .C(diff_pwm_bufg[i]),       // 时钟输入
+            .CE(1'b1),         // 时钟使能
+            .D1(1'b1),         // 正沿数据
+            .D2(1'b0),         // 负沿数据
+            .R(~rst_n),      // 复位
+            .S(1'b0)           // 置位
+        );
+    end
+endgenerate
 
  OBUFDS obufds_inst0 (
-     .O(pwm_diff_port_p),  // 差分信号正端
-     .OB(pwm_diff_port_n), // 差分信号负端
-     .I(diff_pwn)     // 单端信号输入
+     .O (pwm_diff_port_p[0]),  // 差分信号正端
+     .OB(pwm_diff_port_n[0]), // 差分信号负端
+     .I (       diff_pwn[0])  // 单端信号输入
  );
+ OBUFDS obufds_inst1 (
+     .O (pwm_diff_port_p[1]),  // 差分信号正端
+     .OB(pwm_diff_port_n[1]), // 差分信号负端
+     .I (       diff_pwn[1])  // 单端信号输入
+ );
+ OBUFDS obufds_inst2 (
+     .O (pwm_diff_port_p[2]),  // 差分信号正端
+     .OB(pwm_diff_port_n[2]), // 差分信号负端
+     .I (       diff_pwn[2])  // 单端信号输入
+ );
+ OBUFDS obufds_inst3 (
+     .O (pwm_diff_port_p[3]),  // 差分信号正端
+     .OB(pwm_diff_port_n[3]), // 差分信号负端
+     .I (       diff_pwn[3])  // 单端信号输入
+ );
+ OBUFDS obufds_inst4 (
+     .O (pwm_diff_port_p[4]),  // 差分信号正端
+     .OB(pwm_diff_port_n[4]), // 差分信号负端
+     .I (       diff_pwn[4])  // 单端信号输入
+ );
+ OBUFDS obufds_inst5 (
+     .O (pwm_diff_port_p[5]),  // 差分信号正端
+     .OB(pwm_diff_port_n[5]), // 差分信号负端
+     .I (       diff_pwn[5])  // 单端信号输入
+ );
+ 
  // ʱ�ӻ����� (��ѡ)
  wire clk_100M_bufg ;
-BUFG bufg_inst (
+BUFG bufg_inst_d (
     .I(clk_100M_o),
     .O(clk_100M_bufg)
 );
@@ -228,9 +264,9 @@ BUFG bufg_inst (
 wire diff_data;
 ODDR #(
     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-    .INIT(1'b0),                     // 初始�??
+    .INIT(1'b0),                     // 初始�???
     .SRTYPE("SYNC")                  // 同步置位/复位
-) ODDR_inst0 (
+) ODDR_inst_d (
     .Q(diff_data),     // 输出数据
     .C(clk_100M_bufg),       // 时钟输入
     .CE(1'b1),         // 时钟使能
@@ -239,23 +275,23 @@ ODDR #(
     .R(~rst_n),      // 复位
     .S(1'b0)           // 置位
 );
-// 差分输出缓冲�??
+// 差分输出缓冲�???
 OBUFDS #(
     // .IOSTANDARD("LVDS_25"),         // I/O 标准
-    .SLEW("SLOW")                   // 控制压摆�??
-) OBUFDS_inst (
+    .SLEW("SLOW")                   // 控制压摆�???
+) OBUFDS_inst_d (
     .O(adc_clk_p),          // 差分正端输出
     .OB(adc_clk_n),         // 差分负端输出
-    .I(diff_data)        // 来自 ODDR 的数�??
+    .I(diff_data)        // 来自 ODDR 的数�???
 );
 
 // 使用 ODDR 原语保证输出同步
 wire dds_clk;
 ODDR #(
     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-    .INIT(1'b0),                     // 初始�???
+    .INIT(1'b0),                     // 初始�????
     .SRTYPE("SYNC")                  // 同步置位/复位
-) ODDR_inst1 (
+) ODDR_inst_c (
     .Q(dds_clk),     // 输出数据
     .C(clk_100M_o),       // 时钟输入
     .CE(1'b1),         // 时钟使能
@@ -264,13 +300,13 @@ ODDR #(
     .R(~rst_n),      // 复位
     .S(1'b0)           // 置位
 );
-OBUFDS obufds_inst2 (
+OBUFDS obufds_inst_c (
     .O(dds_clk0_p),  // 差分信号正端
     .OB(dds_clk0_n), // 差分信号负端
     .I(dds_clk)     // 单端信号输入
 );
 
 assign led = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
-// assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�????????????
+// assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�?????????????
 
 endmodule
