@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module tb_hsem_s750_uart_pwm();
 
     // Parameters
@@ -111,14 +112,15 @@ endtask
 
     // Reset generation
     initial begin
-        sys_rst = 0;
-        #100 sys_rst = 1;
-        #100 sys_rst = 0;
+        // sys_rst = 0;
+        // #500 
+        sys_rst = 1;
+        #3000 sys_rst = 0;
         uart_rxd = 1;
         // 系统复位
         // #100;
         // sys_rst = 0; // 复位信号拉低
-        #3000; 
+        // #3000; 
         #BIT_PERIOD; 						//直接延时，一�?波特率周�?
 	$display("Sending configuration dac...");	
     send_pwm_packet(

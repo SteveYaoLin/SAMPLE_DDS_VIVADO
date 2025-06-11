@@ -30,7 +30,7 @@ wire clk_100M_o;
 wire clk_50M_o;
 wire locked;
 wire resetn;
-wire rst_n = ~locked; // Active low reset signal
+wire rst_n = locked; // Active low reset signal
 
 wire  [7:0] uart_data;
 wire uart_done;
@@ -253,7 +253,7 @@ endgenerate
      .OB(pwm_diff_port_n[5]), // 差分信号负端
      .I (       diff_pwn[5])  // 单端信号输入
  );
- 
+
  // ʱ�ӻ����� (��ѡ)
  wire clk_100M_bufg ;
 BUFG bufg_inst_d (
