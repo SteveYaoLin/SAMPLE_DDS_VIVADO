@@ -55,3 +55,15 @@
 *.version
 !*.v
 !prj_lhz_uart_led\prj_lhz_uart_led.runs\impl_1\dds_sample_top.bit
+
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.gen/*
+#!/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.en/sources_1/bd/system/hdl/*.v
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.hw/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.ip_user_files/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.sim/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.runs/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.srcs/sources_1/bd/system/hw_handoff/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.srcs/sources_1/bd/system/ipshared/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.srcs/sources_1/bd/system/sim/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.srcs/sources_1/bd/system/ui/
+/Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.srcs/sources_1/bd/system/ip/
