@@ -143,6 +143,7 @@ uart_protocol_tx u_uart_protocol_tx(
     /*input       */.rst_n    (rst_n    ),
                                 //8'h80;
     /*input       */.recv_done(recv_done),
+    /*input [7:0] */.rev_data0(rev_data0),
     /*input [7:0] */.rev_data1(rev_data1),
     /*input [7:0] */.rev_data2(rev_data2),
     /*input [7:0] */.rev_data3(rev_data3),
