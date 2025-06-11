@@ -8,6 +8,7 @@ module hsem_s750_uart_pwm # (
     input wire sys_clk,          // System clock input U18
     input wire sys_rst,        // Active low reset input
     input wire uart_rxd,         // UART RXD input T19
+    output wire uart_re, // DAC data output
     // output [_DAC_WIDTH-1:0]   dac_data,//fmc bus
     output wire led,        // LED drive signal H 15
     // output ad9748_sleep, // Sleep control signal for AD9748
@@ -308,5 +309,5 @@ OBUFDS obufds_inst_c (
 
 assign led = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
 // assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�?????????????
-
+assign uart_re = 1'bZ; // 使能DAC数据输出（低电平有效�?????????????
 endmodule
