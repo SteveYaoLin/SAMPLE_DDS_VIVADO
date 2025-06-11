@@ -1,6 +1,6 @@
 module Artix7_pwm_uart_brd # (
-    parameter _PAT_WIDTH = 32 ,   // 模式寄存器宽�?????????????
-    parameter _NUM_CHANNELS = 20,        // �???????????大PWM通道数量
+    parameter _PAT_WIDTH = 32 ,   // 模式寄存器�?��?????????????
+    parameter _NUM_CHANNELS = 20,        // �????????????�?PWM通道数量
     parameter _NUM_SLOW_CH = 1, 
     parameter _DAC_WIDTH = 8      // DAC数据宽度
 )
@@ -132,7 +132,7 @@ uart_reg_mapper # (
    /*input [7:0] */  .rev_data9   (rev_data9   ) ,
    /*input [7:0] */  .rev_data10  (rev_data10  ) ,
 //    /*input [7:0] */  .rev_data11  (rev_data11  ) ,
-   /*input       */  .pack_done   (pack_done   ) ,     // 数据包接收完成标�???????????    
+   /*input       */  .pack_done   (pack_done   ) ,     // 数据包接收完成标�????????????    
    /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data (dac_data ),         
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_out  (pwm_out  ),    // PWM输出总线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_busy (pwm_busy ),   // 忙状态�?�线
@@ -169,35 +169,35 @@ breath_led u_breath_led(
 
 // ODDR #(
 //    .DDR_CLK_EDGE("SAME_EDGE"),  // 时钟双沿采样模式
-//    .INIT(1'b0),                     // 初始化�??
-//    .SRTYPE("SYNC")                  // 同步复位类型
+//    .INIT(1'b0),                     // 初�?�化�???
+//    .SRTYPE("SYNC")                  // 同�?��?�位类型
 // ) ODDR_inst (
 //    .Q(pwm_port),    // 输出到IO的PWM信号
-//    .C(clk_50m),     // 50MHz时钟输入（需与PWM逻辑同步�?????????????????
+//    .C(clk_50m),     // 50MHz时钟输入（需与PWM逻辑同�?��?????????????????
 //    .CE(1'b1),       // 始终使能
-//    .D1(pwm_out[0]),  // 内部生成的PWM逻辑（高电平�?????????????????
-//    .D2(1'b0),  // 与D1相同，确保单沿输�?????????????????
-//    .R(1'b0),        // 无复�?????????????????
-//    .S(1'b0)         // 无置�?????????????????
+//    .D1(pwm_out[0]),  // 内部生成的PWM逻辑（高电平�??????????????????
+//    .D2(1'b0),  // 与D1相同，确保单沿输�??????????????????
+//    .R(1'b0),        // 无�?��?????????????????
+//    .S(1'b0)         // 无置�??????????????????
 // );
 
 // OBUF #(
-//    .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
+//    .DRIVE(12),       // 驱动电流设为12mA（根�?负载调整�?
 //    .IOSTANDARD("LVCMOS33"), // I/O电平标准
-//    .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�?????????????????
+//    .SLEW("SLOW")     // 压摆率�?�为SLOW以减少高频噪�??????????????????
 // ) OBUF_fast_sig (
-//    .O(pwm_port),      // 实际引脚（B35_L19_P�?????????????????
-//    .I(pwm_out[0])      // 来自ODDR的输�?????????????????
+//    .O(pwm_port),      // 实际引脚（B35_L19_P�??????????????????
+//    .I(pwm_out[0])      // 来自ODDR的输�??????????????????
 // );
 
 OBUF #(
-   .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
+   .DRIVE(12),       // 驱动电流设为12mA（根�?负载调整�?
    .IOSTANDARD("LVCMOS33"), // I/O电平标准
-   .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�?????????????????
+   .SLEW("SLOW")     // 压摆率�?�为SLOW以减少高频噪�??????????????????
 ) OBUF_slow_sig (
-   .O(pwm_slow_port),      // 实际引脚（B35_L19_P�?????????????????
-//    .I(1'b1)     // 单端信号输入
-   .I(pwm_out[_NUM_CHANNELS])      // 来自ODDR的输�?????????????????
+   .O(pwm_slow_port),      // 实际引脚（B35_L19_P�??????????????????
+//    .I(1'b1)     // 单�??信号输入
+   .I(pwm_out[_NUM_CHANNELS])      // 来自ODDR的输�??????????????????
 );
 
 wire [_NUM_CHANNELS - 1 : 0] diff_pwn;
@@ -211,8 +211,8 @@ generate
             );
         ODDR #(
             .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-            .INIT(1'b0),                     // 初始�????
-            .SRTYPE("SYNC")                  // 同步置位/复位
+            .INIT(1'b0),                     // 初�?��????
+            .SRTYPE("SYNC")                  // 同�?�置�?/复位
         ) ODDR_inst0 (
             .Q(diff_pwn[i]),     // 输出数据
             .C(diff_pwm_bufg[i]),       // 时钟输入
@@ -220,112 +220,15 @@ generate
             .D1(1'b1),         // 正沿数据
             .D2(1'b0),         // 负沿数据
             .R(~rst_n),      // 复位
-            .S(1'b0)           // 置位
+            .S(1'b0)           // �?�?
         );
+        OBUFDS obufds_inst (
+     .O (pwm_diff_port_p[i]),  // �?分信号�?��??
+     .OB(pwm_diff_port_n[i]), // �?分信号负�?
+     .I (       diff_pwn[i])  // 单�??信号输入
+ );
     end
 endgenerate
-
- OBUFDS obufds_inst0 (
-     .O (pwm_diff_port_p[0]),  // 差分信号正端
-     .OB(pwm_diff_port_n[0]), // 差分信号负端
-     .I (       diff_pwn[0])  // 单端信号输入
- );
- OBUFDS obufds_inst1 (
-     .O (pwm_diff_port_p[1]),  // 差分信号正端
-     .OB(pwm_diff_port_n[1]), // 差分信号负端
-     .I (       diff_pwn[1])  // 单端信号输入
- );
- OBUFDS obufds_inst2 (
-     .O (pwm_diff_port_p[2]),  // 差分信号正端
-     .OB(pwm_diff_port_n[2]), // 差分信号负端
-     .I (       diff_pwn[2])  // 单端信号输入
- );
- OBUFDS obufds_inst3 (
-     .O (pwm_diff_port_p[3]),  // 差分信号正端
-     .OB(pwm_diff_port_n[3]), // 差分信号负端
-     .I (       diff_pwn[3])  // 单端信号输入
- );
- OBUFDS obufds_inst4 (
-     .O (pwm_diff_port_p[4]),  // 差分信号正端
-     .OB(pwm_diff_port_n[4]), // 差分信号负端
-     .I (       diff_pwn[4])  // 单端信号输入
- );
- OBUFDS obufds_inst5 (
-     .O (pwm_diff_port_p[5]),  // 差分信号正端
-     .OB(pwm_diff_port_n[5]), // 差分信号负端
-     .I (       diff_pwn[5])  // 单端信号输入
- );
- OBUFDS       obufds_inst6 (
-     .O (pwm_diff_port_p[6]),  // 差分信号正端
-     .OB(pwm_diff_port_n[6]), // 差分信号负端
-     .I (       diff_pwn[6])  // 单端信号输入
- );
-  OBUFDS      obufds_inst7 (
-     .O (pwm_diff_port_p[7]),  // 差分信号正端
-     .OB(pwm_diff_port_n[7]), // 差分信号负端
-     .I (       diff_pwn[7])  // 单端信号输入
- );
-  OBUFDS      obufds_inst8 (
-     .O (pwm_diff_port_p[8]),  // 差分信号正端
-     .OB(pwm_diff_port_n[8]), // 差分信号负端
-     .I (       diff_pwn[8])  // 单端信号输入
- );
- OBUFDS       obufds_inst9 (
-     .O (pwm_diff_port_p[9]),  // 差分信号正端
-     .OB(pwm_diff_port_n[9]), // 差分信号负端
-     .I (       diff_pwn[9])  // 单端信号输入
- );
- OBUFDS       obufds_inst10 (
-     .O (pwm_diff_port_p[10]),  // 差分信号正端
-     .OB(pwm_diff_port_n[10]), // 差分信号负端
-     .I (       diff_pwn[10])  // 单端信号输入
- );
- OBUFDS       obufds_inst11 (
-     .O (pwm_diff_port_p[11]),  // 差分信号正端
-     .OB(pwm_diff_port_n[11]), // 差分信号负端
-     .I (       diff_pwn[11])  // 单端信号输入
- );
- OBUFDS       obufds_inst12 (
-     .O (pwm_diff_port_p[12]),  // 差分信号正端
-     .OB(pwm_diff_port_n[12]), // 差分信号负端
-     .I (       diff_pwn[12])  // 单端信号输入
- );
- OBUFDS       obufds_inst13 (
-     .O (pwm_diff_port_p[13]),  // 差分信号正端
-     .OB(pwm_diff_port_n[13]), // 差分信号负端
-     .I (       diff_pwn[13])  // 单端信号输入
- );
- OBUFDS       obufds_inst14 (
-     .O (pwm_diff_port_p[14]),  // 差分信号正端
-     .OB(pwm_diff_port_n[14]), // 差分信号负端
-     .I (       diff_pwn[14])  // 单端信号输入
- );
- OBUFDS       obufds_inst15 (
-     .O (pwm_diff_port_p[15]),  // 差分信号正端
-     .OB(pwm_diff_port_n[15]), // 差分信号负端
-     .I (       diff_pwn[15])  // 单端信号输入
- );
- OBUFDS       obufds_inst16 (
-     .O (pwm_diff_port_p[16]),  // 差分信号正端
-     .OB(pwm_diff_port_n[16]), // 差分信号负端
-     .I (       diff_pwn[16])  // 单端信号输入
- );
- OBUFDS       obufds_inst17 (
-     .O (pwm_diff_port_p[17]),  // 差分信号正端
-     .OB(pwm_diff_port_n[17]), // 差分信号负端
-     .I (       diff_pwn[17])  // 单端信号输入
- );
- OBUFDS       obufds_inst18 (
-     .O (pwm_diff_port_p[18]),  // 差分信号正端
-     .OB(pwm_diff_port_n[18]), // 差分信号负端
-     .I (       diff_pwn[18])  // 单端信号输入
- );
- OBUFDS       obufds_inst19 (
-     .O (pwm_diff_port_p[19]),  // 差分信号正端
-     .OB(pwm_diff_port_n[19]), // 差分信号负端
-     .I (       diff_pwn[19])  // 单端信号输入
- );
- 
 
 
  // ʱ�ӻ����� (��ѡ)
@@ -334,12 +237,12 @@ BUFG bufg_inst_d (
     .I(clk_100M_o),
     .O(clk_100M_bufg)
 );
- // 使用 ODDR 原语保证输出同步
+ // 使用 ODDR 原�??保证输出同�??
 wire diff_data;
 ODDR #(
     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-    .INIT(1'b0),                     // 初始�????
-    .SRTYPE("SYNC")                  // 同步置位/复位
+    .INIT(1'b0),                     // 初�?��????
+    .SRTYPE("SYNC")                  // 同�?�置�?/复位
 ) ODDR_inst_d (
     .Q(diff_data),     // 输出数据
     .C(clk_100M_bufg),       // 时钟输入
@@ -347,24 +250,24 @@ ODDR #(
     .D1(1'b1),         // 正沿数据
     .D2(1'b0),         // 负沿数据
     .R(~rst_n),      // 复位
-    .S(1'b0)           // 置位
+    .S(1'b0)           // �?�?
 );
-// 差分输出缓冲�????
+// �?分输出缓冲�????
 OBUFDS #(
     // .IOSTANDARD("LVDS_25"),         // I/O 标准
-    .SLEW("SLOW")                   // 控制压摆�????
+    .SLEW("SLOW")                   // 控制压摆�?????
 ) OBUFDS_inst_d (
-    .O(adc_clk_p),          // 差分正端输出
-    .OB(adc_clk_n),         // 差分负端输出
-    .I(diff_data)        // 来自 ODDR 的数�????
+    .O(adc_clk_p),          // �?分�?��??输出
+    .OB(adc_clk_n),         // �?分负�?输出
+    .I(diff_data)        // 来自 ODDR 的数�?????
 );
 
-// 使用 ODDR 原语保证输出同步
+// 使用 ODDR 原�??保证输出同�??
 wire dds_clk;
 ODDR #(
     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-    .INIT(1'b0),                     // 初始�?????
-    .SRTYPE("SYNC")                  // 同步置位/复位
+    .INIT(1'b0),                     // 初�?��?????
+    .SRTYPE("SYNC")                  // 同�?�置�?/复位
 ) ODDR_inst_c (
     .Q(dds_clk),     // 输出数据
     .C(clk_100M_o),       // 时钟输入
@@ -372,15 +275,15 @@ ODDR #(
     .D1(1'b1),         // 正沿数据
     .D2(1'b0),         // 负沿数据
     .R(~rst_n),      // 复位
-    .S(1'b0)           // 置位
+    .S(1'b0)           // �?�?
 );
 OBUFDS obufds_inst_c (
-    .O(dds_clk0_p),  // 差分信号正端
-    .OB(dds_clk0_n), // 差分信号负端
-    .I(dds_clk)     // 单端信号输入
+    .O(dds_clk0_p),  // �?分信号�?��??
+    .OB(dds_clk0_n), // �?分信号负�?
+    .I(dds_clk)     // 单�??信号输入
 );
 
 assign led = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
-// assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�??????????????
-assign uart_re = 1'bZ; // 使能DAC数据输出（低电平有效�??????????????
+// assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�???????????????
+assign uart_re = 1'bZ; // 使能DAC数据输出（低电平有效�???????????????
 endmodule

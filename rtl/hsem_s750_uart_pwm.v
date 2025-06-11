@@ -222,39 +222,14 @@ generate
             .R(~rst_n),      // 复位
             .S(1'b0)           // 置位
         );
+        OBUFDS obufds_inst (
+     .O (pwm_diff_port_p[i]),  // 宸�鍒嗕俊鍙锋�ｇ��
+     .OB(pwm_diff_port_n[i]), // 宸�鍒嗕俊鍙疯礋绔�
+     .I (       diff_pwn[i])  // 鍗曠��淇″彿杈撳叆
+ );
     end
 endgenerate
 
- OBUFDS obufds_inst0 (
-     .O (pwm_diff_port_p[0]),  // 差分信号正端
-     .OB(pwm_diff_port_n[0]), // 差分信号负端
-     .I (       diff_pwn[0])  // 单端信号输入
- );
- OBUFDS obufds_inst1 (
-     .O (pwm_diff_port_p[1]),  // 差分信号正端
-     .OB(pwm_diff_port_n[1]), // 差分信号负端
-     .I (       diff_pwn[1])  // 单端信号输入
- );
- OBUFDS obufds_inst2 (
-     .O (pwm_diff_port_p[2]),  // 差分信号正端
-     .OB(pwm_diff_port_n[2]), // 差分信号负端
-     .I (       diff_pwn[2])  // 单端信号输入
- );
- OBUFDS obufds_inst3 (
-     .O (pwm_diff_port_p[3]),  // 差分信号正端
-     .OB(pwm_diff_port_n[3]), // 差分信号负端
-     .I (       diff_pwn[3])  // 单端信号输入
- );
- OBUFDS obufds_inst4 (
-     .O (pwm_diff_port_p[4]),  // 差分信号正端
-     .OB(pwm_diff_port_n[4]), // 差分信号负端
-     .I (       diff_pwn[4])  // 单端信号输入
- );
- OBUFDS obufds_inst5 (
-     .O (pwm_diff_port_p[5]),  // 差分信号正端
-     .OB(pwm_diff_port_n[5]), // 差分信号负端
-     .I (       diff_pwn[5])  // 单端信号输入
- );
 
  // ʱ�ӻ����� (��ѡ)
  wire clk_100M_bufg ;
