@@ -1,18 +1,18 @@
 // pattern_pwm module add dac_data [7:0]
 module pattern_ad9748 #(
-    parameter _PAT_WIDTH = 8  ,  // 模式寄存器宽�???
-    parameter _DAC_WIDTH = 8    // 模式寄存器宽�???
+    parameter _PAT_WIDTH = 8  ,  // 模式寄存器宽�???
+    parameter _DAC_WIDTH = 8    // 模式寄存器宽�???
 ) (
     input         clk,
-    input         rst_n,        // 异步复位（低有效�???
+    input         rst_n,        // 异步复位（低有效�???
     input         pwm_en,       // 使能信号
     input [7:0]   duty_num,     // 占空比周期数
-    input [15:0]  pulse_dessert,// 脉冲间隔周期�???
-    input [7:0]   pulse_num,    // 脉冲次数�???0=无限�???
-    input  [_PAT_WIDTH-1:0] PAT, // 模式寄存�???
+    input [15:0]  pulse_dessert,// 脉冲间隔周期�???
+    input [7:0]   pulse_num,    // 脉冲次数�???0=无限�???
+    input  [_PAT_WIDTH-1:0] PAT, // 模式寄存�???
     output reg [_DAC_WIDTH-1:0]     dac_data,      // PWM输出
     output reg    pwm_out,      // PWM输出
-    output reg    busy,         // 忙信�???
+    output reg    busy,         // 忙信�???
     output reg    valid         // PWM结束标志
 );
 
@@ -25,14 +25,14 @@ localparam FINISH    = 3'd3;
 reg [2:0]   state;
 reg [7:0]   bit_cnt;           // 位计数器
 reg [7:0]   duty_cnt;          // 占空比计数器
-reg [15:0]  wait_cnt;          // 间隔计数�???
-reg [7:0]   pulse_cnt;         // 脉冲计数�???
-reg [7:0]   pat_bit;           // PAT�???高位�???测结�???
-reg         en_fall;           // 使能下降沿检�???
+reg [15:0]  wait_cnt;          // 间隔计数�???
+reg [7:0]   pulse_cnt;         // 脉冲计数�???
+reg [7:0]   pat_bit;           // PAT�???高位�???测结�???
+reg         en_fall;           // 使能下降沿检�???
 reg         last_pwm_en;       // 使能信号缓存
 reg         async_stop;        // 异步停止标志
 
-// PAT�???高位�???测�?�辑
+// PAT�???高位�???测�?�辑
 integer i;
 reg     found;
 always @(*) begin
@@ -54,7 +54,7 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         last_pwm_en <= pwm_en;
-        // �???测到下降沿且处于无限模式
+        // �???测到下降沿且处于无限模式
         if ((~pwm_en) & last_pwm_en & (pulse_num == 0)) 
             async_stop <= 1'b1;
         // 清除异步停止标志
@@ -131,7 +131,7 @@ always @(posedge clk or negedge rst_n) begin
                         wait_cnt <= wait_cnt + 1'b1;
                     end
                     else begin
-                        // �???查终止条�???
+                        // �???查终止条�???
                         if ((pulse_num !=0 && pulse_cnt >= pulse_num) || 
                             (pulse_num ==0 && async_stop)) begin
                             state <= FINISH;
@@ -151,7 +151,7 @@ always @(posedge clk or negedge rst_n) begin
                 valid <= 1'b1;
                 state <= IDLE;
                 pwm_out <= 1'b0;
-                // 清除�???有工作状�???
+                // 清除�???有工作状�???
                 bit_cnt   <= 8'd0;
                 duty_cnt  <= 8'h00;
                 wait_cnt  <= 16'd0;
@@ -168,17 +168,21 @@ always @(posedge clk or negedge rst_n) begin
 end
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-//        dac_data <= {(_DAC_WIDTH-1){1'b1}};
-        dac_data <= 0;
+       dac_data <= {(_DAC_WIDTH-1){1'b1}};
+        // dac_data <= 0;
     end
     else begin
-        if (pwm_out) begin
-//            dac_data <= {_DAC_WIDTH{1'b1}};
-                dac_data <= {_DAC_WIDTH{1'b1}};
+        if (busy == 1'b0) begin
+                dac_data <= {(_DAC_WIDTH-1){1'b1}}; // 复位时输出高电平
         end
         else begin
-//            dac_data <= {(_DAC_WIDTH-1){1'b1}};
-        dac_data <= 0;
+            // 输出PWM值
+            if (pwm_out) begin
+                dac_data <= {(_DAC_WIDTH){1'b1}}; // 输出低电平
+            end
+            else begin
+                dac_data <= 0; // 输出高电平
+            end
         end
     end
 end

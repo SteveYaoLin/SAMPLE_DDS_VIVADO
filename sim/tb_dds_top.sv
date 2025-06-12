@@ -243,6 +243,24 @@ initial begin
         8'h55,  // CRC ERROR
         8'hAA   // 假设包尾
     );
+    #(BIT_PERIOD * 50) ; 	
+	$display("disenable pwm2 dac....");	
+    send_pwm_packet(
+        8'h55,  // 假设包头
+        8'h02,  // reg_func
+        8'h02,  // hs_pwm_ch
+        8'h00,  // hs_ctrl_sta
+        8'h00,  // duty_num
+        8'h00,  // pulse_dessert H
+        8'h00,  // pulse_dessert L
+        8'h00,  // pulse_num
+        8'h00,  // PAT
+        8'h00,  // PAT
+        8'h00,  // PAT
+        8'h00,  // PAT
+        8'hEE,  // CRC
+        8'hAA   // 假设包尾
+    );
 	#(BIT_PERIOD * 50) ; 	
     $display("disable pwm1...");	
     send_pwm_packet(
