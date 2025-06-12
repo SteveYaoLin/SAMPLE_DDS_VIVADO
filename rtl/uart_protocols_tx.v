@@ -1,4 +1,7 @@
-module uart_protocol_tx (
+module uart_protocol_tx #(
+    parameter _DELAY_BYTE = 16'h01e0
+)
+(
     input clk_50M,
     input rst_n,
     input recv_done,
@@ -30,7 +33,7 @@ parameter _UART_TX_EN_DELAY = 16;
 reg [_UART_TX_EN_DELAY-1:0] uart_start_delay;
 wire uart_start;
 wire uart_tx_done;
-reg [7:0] uart_tx_keep;
+reg [15:0] uart_tx_keep;
 
 always @(posedge clk_50M or negedge rst_n) begin
     if (!rst_n) begin
@@ -47,7 +50,7 @@ always @(posedge clk_50M or negedge rst_n) begin
         state <= IDLE;
         tx_cnt <= 3'd0;
         uart_tx_en <= 1'b0;
-        uart_tx_keep <= 8'h00;
+        uart_tx_keep <= 16'h00;
     end else begin
         case (state)
             IDLE: begin
@@ -55,14 +58,14 @@ always @(posedge clk_50M or negedge rst_n) begin
                     state <= START;
                     tx_cnt <= 3'd0;
                     uart_tx_en <= 1'b0;
-                    uart_tx_keep <= 8'h00;
+                    uart_tx_keep <= 16'h00;
                 end
             end
             START:begin
                 state <= SEND;
                 uart_tx_en <= 1'b1;
-                tx_cnt <= tx_cnt + 1'b1;
-                uart_tx_keep <= 8'h00;
+                // tx_cnt <= tx_cnt + 1'b1;
+                uart_tx_keep <= 16'h00;
             end
             SEND: begin
                 uart_tx_en <= 1'b0;
@@ -70,12 +73,14 @@ always @(posedge clk_50M or negedge rst_n) begin
                     uart_tx_keep <= uart_tx_keep + 1'b1;
                     state <= SEND;
                 end
-                else if (uart_tx_keep == 8'h0f) begin
+                else if (uart_tx_keep == _DELAY_BYTE) begin
                     uart_tx_keep <= 8'h00;
                     if (tx_cnt == 3'd5) begin
                         state <= IDLE;
+                        tx_cnt <= 3'd0;
                     end else begin
                         state <= START;
+                        tx_cnt <= tx_cnt + 1'b1;
                     end
                 end
                 else if (|uart_tx_keep)begin
@@ -236,6 +241,6 @@ endmodule
 //     .uart_tx_en    (uart_tx_en),
 //     .uart_tx_data  (uart_tx_data),
 //     .uart_txd      (uart_txd),
-//     .uart_tx_done  (uart_tx_done), // 拉高发�?�完成信�??
+//     .uart_tx_done  (uart_tx_done), // 拉高发�?�完成信�??
 //     .uart_tx_busy  (uart_tx_busy)
 // );
