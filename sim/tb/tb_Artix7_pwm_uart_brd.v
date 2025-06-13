@@ -139,7 +139,7 @@ endtask
         8'hf2,  // CRC
         8'haa   // 假�?�包�?
     );
-	#(BIT_PERIOD * 50) ; 	
+	#(BIT_PERIOD * 100) ; 	
     $display("Sending configuration dac...");	
     send_pwm_packet(
         8'h55,  // 假�?�包�?
@@ -157,7 +157,7 @@ endtask
         8'h97,  // CRC
         8'haa   // 假�?�包�?
     );
-	#(BIT_PERIOD * 50) ; 	
+	#(BIT_PERIOD * 100) ; 	
 
     $display("Sending configuration pwm1...");	
     send_pwm_packet(
@@ -176,7 +176,7 @@ endtask
         8'h33,  // CRC
         8'haa   // 假�?�包�?
     );
-	#(BIT_PERIOD * 50) ; 	
+	#(BIT_PERIOD * 100) ; 	
 	$display("Enable pwm1...");	
     send_pwm_packet(
         8'h55,  // 假�?�包�?
@@ -194,7 +194,7 @@ endtask
         8'h2f,  // CRC
         8'haa   // 假�?�包�?
     );
-	#(BIT_PERIOD * 50) ; 
+	#(BIT_PERIOD * 100) ; 
 	$display("Enable pwm3 slow pwm...");	
     send_pwm_packet(
         8'h55,  // 假�?�包�?
@@ -213,7 +213,7 @@ endtask
         8'hAA   // 假�?�包�?
     );
 	
-	#(BIT_PERIOD * 50) ; 	
+	#(BIT_PERIOD * 100) ; 	
 	$display("disenable pwm3 slow pwm....");	
     send_pwm_packet(
         8'h55,  // 假�?�包�?
@@ -232,7 +232,7 @@ endtask
         8'hAA   // 假�?�包�?
     );
 	
-	#(BIT_PERIOD * 50) ; 
+	#(BIT_PERIOD * 100) ; 
     $display("disable pwm1 unsecceed...");	
     send_pwm_packet(
         8'h55,  // 假�?�包�?
@@ -251,7 +251,7 @@ endtask
         8'h55,  // CRC ERROR
         8'hAA   // 假�?�包�?
     );
-	#(BIT_PERIOD * 50) ; 	
+	#(BIT_PERIOD * 100) ; 	
     $display("disable pwm1...");	
     send_pwm_packet(
         8'h55,  // 假�?�包�?
@@ -270,7 +270,7 @@ endtask
         // 8'h55,  // CRC ERROR
         8'hAA   // 假�?�包�?
     );
-	#(BIT_PERIOD * 50) ; 
+	#(BIT_PERIOD * 100) ; 
 	$stop;		//结束仿真
     end
 
@@ -283,8 +283,8 @@ endtask
     //     #1000 $finish;
     // end
     // 波形记录
-    initial begin
-        $dumpfile("waveform.vcd");
-        $dumpvars(0, tb_Artix7_pwm_uart_brd);
-    end
+    // initial begin
+    //     $dumpfile("waveform.vcd");
+    //     $dumpvars(0, tb_Artix7_pwm_uart_brd);
+    // end
 endmodule
