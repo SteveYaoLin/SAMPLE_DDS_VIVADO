@@ -94,6 +94,7 @@ task uart_send_byte;
         #BIT_PERIOD;
     end
 endtask
+
 task send_pwm_packet;
     input [7:0] header;
     input [7:0] reg_func;
