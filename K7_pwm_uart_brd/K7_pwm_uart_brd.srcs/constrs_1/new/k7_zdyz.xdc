@@ -33,4 +33,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports debug_uart_rx]
 set_property IOSTANDARD LVCMOS33 [get_ports debug_uart_tx]
 set_property PACKAGE_PIN B29 [get_ports pwm_slow_port]
 set_property PACKAGE_PIN AH29 [get_ports pwm_port]
-set_property IOSTANDARD HSTL_II_18 [get_ports pwm_port]
+set_property IOSTANDARD LVCMOS33 [get_ports pwm_port]
+set_property IOSTANDARD DIFF_SSTL15 [get_ports adc_clk_p]
+set_property PACKAGE_PIN AG9 [get_ports adc_clk_p]
+
