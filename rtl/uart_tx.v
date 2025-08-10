@@ -16,7 +16,11 @@
 //----------------------------------------------------------------------------------------
 //****************************************************************************************//
 
-module uart_tx(
+module uart_tx # (
+    parameter CLK_FREQ = 50000000,               //系统时钟频率
+    parameter UART_BPS = 115200                  //串口波特率
+)
+(
     input               clk         , //系统时钟
     input               rst_n       , //系统复位，低有效
     input               uart_tx_en  , //UART的发送使能
@@ -27,8 +31,6 @@ module uart_tx(
     );
 
 //parameter define
-parameter CLK_FREQ = 50000000;               //系统时钟频率
-parameter UART_BPS = 115200  ;               //串口波特率
 localparam BAUD_CNT_MAX = CLK_FREQ/UART_BPS; //为得到指定波特率，对系统时钟计数BPS_CNT次
 
 //reg define

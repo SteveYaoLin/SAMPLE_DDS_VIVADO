@@ -1,5 +1,7 @@
 module uart_protocol_tx #(
-    parameter _DELAY_BYTE = 16'h01e0
+    parameter _DELAY_BYTE = 16'h01e0,
+    parameter CLK_FREQ = 50000000,               //系统时钟频率
+    parameter UART_BPS = 115200                  //串口波特率
 )
 (
     input clk_50M,
@@ -120,7 +122,11 @@ always @(*) begin
     endcase
 end
 
-uart_tx u_uart_tx(
+uart_tx #(
+    .CLK_FREQ(CLK_FREQ),
+    .UART_BPS(UART_BPS)
+)
+u_uart_tx(
     .clk           (clk_50M),
     .rst_n         (rst_n),
     .uart_tx_en    (uart_tx_en),
