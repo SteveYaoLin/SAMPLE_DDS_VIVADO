@@ -1,17 +1,24 @@
 module K7_pwm_uart_brd # (
-    parameter _PAT_WIDTH = 32 ,   // 模式寄存器宽�?????????????
-    parameter _NUM_CHANNELS = 3,        // �???????????大PWM通道数量
+    parameter _PAT_WIDTH = 32 ,   // 模式寄存器宽�????????????
+    parameter _NUM_CHANNELS = 3,        // �??????????大PWM通道数量
     parameter _NUM_SLOW_CH = 1, 
     parameter CLK_FREQ = 50000000,               //系统时钟频率
-    parameter UART_BPS = 115200  ,                //串口波特�?
+    parameter UART_BPS = 115200  ,                //串口波特率
     parameter _DAC_WIDTH = 8      // DAC数据宽度
 )
 (
-//    input wire sys_clk,          // System clock input 
     input               sys_clk_p      ,  
     input               sys_clk_n      ,  
     input wire sys_rst_n,        // Active low reset input
-    input wire uart_rxd,         
+    input wire uart_rxd,         // UART RXD input 
+    // output reg [7:0] uart_data,  // UART data output
+    // output reg uart_done,        // UART done signal
+    // output reg uart_get,         // UART get signal
+    
+    // output reg [7:0] pack_cnt,   // Packet count output
+    // output reg pack_ing,         // Packet in progress signal
+    // output reg pack_done,        // Packet done signal
+    // output reg [7:0] pack_num,   // Packet number output
     output [_DAC_WIDTH-1:0]   dac_data,
     output wire led,        // LED drive signal H 15
     output ad9748_sleep, // Sleep control signal for AD9748
@@ -19,15 +26,15 @@ module K7_pwm_uart_brd # (
     output adc_clk_p,
     output adc_clk_n,
     output pwm_slow_port,
-    // output pwm_diff_port_n,
-    // output pwm_diff_port_p,
-    // output dds_clk0_p,
-    // output dds_clk0_n,
-    output wire debug_uart_tx, 
-    output wire debug_uart_rx, 
-    output wire uart_txd 
-
+    output pwm_diff_port_n,
+    output pwm_diff_port_p,
+    output dds_clk0_p,
+    output dds_clk0_n,
+    output wire debug_uart_tx, //J15
+    output wire debug_uart_rx, //J15
+    output wire uart_txd //J15
 );
+
 
 // First, declare the necessary signals
 wire clk_50M;
@@ -36,7 +43,7 @@ wire clk_100M_o;
 wire clk_50M_o;
 wire locked;
 wire resetn;
-wire rst_n = locked; // Active low reset signal
+wire rst_n = sys_rst_n & locked; // Active low reset signal
 
 wire  [7:0] uart_data;
 wire uart_done;
@@ -46,6 +53,10 @@ wire pack_ing;
 wire pack_done;
 wire [7:0] pack_num;
 wire recv_done;
+wire [7:0] dataA;
+wire [7:0] dataD;
+wire [15:0] dataB;
+wire [15:0] dataC;
 wire led_enable;
 wire led_breath;
 wire [(_NUM_CHANNELS + _NUM_SLOW_CH -1):0] pwm_out;
@@ -59,7 +70,7 @@ wire [16:0]    pulse_dessert [_NUM_CHANNELS-1:0];
 wire [7:0]     pulse_num     [_NUM_CHANNELS-1:0];
 wire [31:0]    PAT           [_NUM_CHANNELS-1:0];
 wire [7:0]     ls_pwm_ch     [(_NUM_SLOW_CH -1):0];
-// wire [7:0]     ls_ctrl_sta   [(_NUM_CHANNELS + _NUM_SLOW_CH -1):0];
+wire [7:0]     ls_ctrl_sta   [(_NUM_CHANNELS + _NUM_SLOW_CH -1):0];
 
 wire    [7:0]     rev_data0  ;
 wire    [7:0]     rev_data1  ;
@@ -72,8 +83,17 @@ wire    [7:0]     rev_data7  ;
 wire    [7:0]     rev_data8  ;
 wire    [7:0]     rev_data9  ;
 wire    [7:0]     rev_data10 ;
+// wire    [7:0]     rev_data11 ;
 wire [7:0] response_data; // Response data output
-   clk_wiz_0 u_mmcm
+
+
+// wire [31:0] slow_drive;
+// 添加以下信号声明
+// wire [_DAC_WIDTH - 1:0] dac_data;
+// wire pwm_ad9748;
+// wire pwm_ad9748_busy;
+// wire pwm_ad9748_valid;
+  clk_wiz_0 u_mmcm
   (
   // Clock out ports  
   .clk_out1(clk_50M),
@@ -89,7 +109,10 @@ wire [7:0] response_data; // Response data output
   );
 
 // Then, instantiate the module with proper port connections
-uart_mult_byte_rx u_uart_rx_inst (
+uart_mult_byte_rx #(
+    .CLK_FREQ(CLK_FREQ),
+    .UART_BPS(UART_BPS)
+) u_uart_rx_inst (
     .sys_clk    (clk_50M),      // Connect to input clock
     .sys_rst_n  (!rst_n  ),    // Connect to reset
     .uart_rxd   (uart_rxd),     // Connect to UART RX input
@@ -116,6 +139,15 @@ uart_mult_byte_rx u_uart_rx_inst (
     .rev_data9  (rev_data9   ),
     .rev_data10 (rev_data10  ),
     .response_data(response_data)
+    // .rev_data11 (rev_data11  ) 
+    // .hs_pwm_ch    (hs_pwm_ch    ),
+	// .hs_ctrl_sta  (hs_ctrl_sta  ),
+	// .duty_num     (duty_num     ),
+	// .pulse_dessert(pulse_dessert),
+	// .pulse_num    (pulse_num    ),
+	// .PAT          (PAT          ),
+	// .ls_pwm_ch    (ls_pwm_ch    ),
+	// .ls_ctrl_sta  (ls_ctrl_sta  )
 );
 
 uart_reg_mapper # (
@@ -138,13 +170,27 @@ uart_reg_mapper # (
    /*input [7:0] */  .rev_data9   (rev_data9   ) ,
    /*input [7:0] */  .rev_data10  (rev_data10  ) ,
 //    /*input [7:0] */  .rev_data11  (rev_data11  ) ,
-   /*input       */  .pack_done   (pack_done   ) ,     // 数据包接收完成标�??????????    
+   /*input       */  .pack_done   (pack_done   ) ,     // 数据包接收完成标�??????????
+   
+   // PWM通道接口
+   /*output [7:0]  .hs_ctrl_sta   (hs_ctrl_sta  ), */
+   /*output [7:0]  .duty_num      (duty_num     ), */
+   /*output [15:0] .pulse_dessert (pulse_dessert), */
+   /*output [7:0]  .pulse_num     (pulse_num    ), */
+   /*output [31:0] .PAT           (PAT          ), */
+   /*output [7:0]  .ls_ctrl_sta   (ls_ctrl_sta  ), */
+   /*output [7:0]  .hs_pwm_ch     (hs_pwm_ch    ), */
+   /*output [7:0]  .ls_pwm_ch     (ls_pwm_ch    )  */          
    /*output wire [_DAC_WIDTH - 1:0 ]*/.dac_data (dac_data ),         
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_out  (pwm_out  ),    // PWM输出总线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_busy (pwm_busy ),   // 忙状态�?�线
    /*output wire [_NUM_CHANNELS-1:0]*/.pwm_valid(pwm_valid)   // 有效标志总线
 );
-uart_protocol_tx u_uart_protocol_tx(
+uart_protocol_tx #(
+    .CLK_FREQ(CLK_FREQ),
+    .UART_BPS(UART_BPS) // Define the UART baud rate
+    )
+    u_uart_protocol_tx(
     /*input       */.clk_50M  (clk_50M  ),
     /*input       */.rst_n    (rst_n    ),
                                 //8'h80;
@@ -172,6 +218,67 @@ breath_led u_breath_led(
 );
 
 
+// wire pwm_oddr;
+
+// pattern_pwm #(
+//     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�????????????????
+// ) pwm0 (
+// /*input                 */ .clk(clk_50M),
+// /*input                 */ .rst_n(rst_n),                     
+// /*input                 */ .pwm_en       ( hs_ctrl_sta  [0] ),
+// /*input [7:0]           */ .duty_num     ( duty_num     [0] ),
+// /*input [15:0]          */ .pulse_dessert( pulse_dessert[0] ),
+// /*input [7:0]           */ .pulse_num    ( pulse_num    [0] ),
+// /*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [0] ),
+// /*output reg            */ .pwm_out      ( pwm_out      [0] ),
+// /*output reg            */ .busy         ( pwm_busy     [0] ),
+// /*output reg            */ .valid        ( pwm_valid    [0] ) 
+// );
+// pattern_pwm #(
+//     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�????????????????
+// ) pwm1 (
+// /*input                 */ .clk(clk_50M),
+// /*input                 */ .rst_n(rst_n),                     
+// /*input                 */ .pwm_en       ( hs_ctrl_sta  [1] ),
+// /*input [7:0]           */ .duty_num     ( duty_num     [1] ),
+// /*input [15:0]          */ .pulse_dessert( pulse_dessert[1] ),
+// /*input [7:0]           */ .pulse_num    ( pulse_num    [1] ),
+// /*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [1] ),
+// /*output reg            */ .pwm_out      ( pwm_out      [1] ),
+// /*output reg            */ .busy         ( pwm_busy     [1] ),
+// /*output reg            */ .valid        ( pwm_valid    [1] ) 
+// );
+
+// pattern_pwm #(
+//     ._PAT_WIDTH(_PAT_WIDTH)    // 模式寄存器宽�????????????????
+// ) pwm2 (
+// /*input                 */ .clk(clk_50M),
+// /*input                 */ .rst_n(rst_n),                       // 异步复位（低有效�????????????????
+// /*input                 */ .pwm_en       ( hs_ctrl_sta  [2] ),       // 使能信号
+// /*input [7:0]           */ .duty_num     ( duty_num     [2] ),     // 占空比周期数
+// /*input [15:0]          */ .pulse_dessert( pulse_dessert[2] ),  // 脉冲间隔周期�????????????????
+// /*input [7:0]           */ .pulse_num    ( pulse_num    [2] ),    // 脉冲次数�????????????????0=无限�????????????????
+// /*input [_PAT_WIDTH-1:0]*/ .PAT          ( PAT          [2] ),  // 模式寄存�????????????????
+// /*output reg            */ .pwm_out      ( pwm_out      [2] ),      // PWM输出
+// /*output reg            */ .busy         ( pwm_busy     [2] ),         // 忙信�????????????????
+// /*output reg            */ .valid        ( pwm_valid    [2] )         // PWM结束标志
+// );
+// pattern_ad9748 #(
+//     ._PAT_WIDTH(_PAT_WIDTH),    // 模式寄存器宽�????????????
+//     ._DAC_WIDTH(_DAC_WIDTH)     // DAC数据宽度
+// ) pwm_dac (
+//     .clk(clk_50M),
+//     .rst_n(rst_n),                     
+//     .pwm_en       ( hs_ctrl_sta  [3] ),
+//     .duty_num     ( duty_num     [3] ),
+//     .pulse_dessert( pulse_dessert[3] ),
+//     .pulse_num    ( pulse_num    [3] ),
+//     .PAT          ( PAT          [3] ),
+//     .pwm_out      ( pwm_out      [3] ),
+//     .busy         ( pwm_busy     [3] ),
+//     .valid        ( pwm_valid    [3] ),
+//     .dac_data     ( dac_data         )       // DAC数据输出   
+// );
 
 // ODDR #(
 //    .DDR_CLK_EDGE("SAME_EDGE"),  // 时钟双沿采样模式
@@ -186,15 +293,34 @@ breath_led u_breath_led(
 //    .R(1'b0),        // 无复�????????????????
 //    .S(1'b0)         // 无置�????????????????
 // );
+    reg [7:0] pwm_counter;
+    reg pwm_100khz;
 
-// OBUF #(
-//    .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
-//    .IOSTANDARD("LVCMOS33"), // I/O电平标准
-//    .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�????????????????
-// ) OBUF_fast_sig (
-//    .O(pwm_port),      // 实际引脚（B35_L19_P�????????????????
-//    .I(pwm_out[0])      // 来自ODDR的输�????????????????
-// );
+    always @(posedge clk_50M_o or negedge rst_n) begin
+        if (!rst_n) begin
+            pwm_counter <= 8'd0;
+            pwm_100khz <= 1'b0;
+        end
+        else begin
+            if (pwm_counter == 8'd24) begin
+                pwm_counter <= 8'd0;
+                pwm_100khz <= ~pwm_100khz;
+            end
+            else begin
+                pwm_counter <= pwm_counter + 8'd1;
+            end
+        end
+    end
+
+    // assign pwm_out[_NUM_CHANNELS] = pwm_100khz;
+OBUF #(
+   .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
+   .IOSTANDARD("LVCMOS33"), // I/O电平标准
+   .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�????????????????
+) OBUF_fast_sig (
+   .O(pwm_port),      // 实际引脚（B35_L19_P�????????????????
+   .I(pwm_out[0])      // 来自ODDR的输�????????????????
+);
 
 OBUF #(
    .DRIVE(12),       // 驱动电流设为12mA（根据负载调整）
@@ -202,55 +328,64 @@ OBUF #(
    .SLEW("SLOW")     // 压摆率设为SLOW以减少高频噪�????????????????
 ) OBUF_slow_sig (
    .O(pwm_slow_port),      // 实际引脚（B35_L19_P�????????????????
-//    .I(1'b1)     // 单端信号输入
+//    .I(pwm_100khz)     // 单端信号输入
    .I(pwm_out[_NUM_CHANNELS])      // 来自ODDR的输�????????????????
 );
 
-wire [_NUM_CHANNELS - 1 : 0] diff_pwn;
-wire [_NUM_CHANNELS - 1 : 0] diff_pwm_bufg;
-generate
-    genvar i;
-    for (i = 0; i < _NUM_CHANNELS; i = i + 1) begin : pwm_diff_gen
-        BUFG bufg_inst (
-            .I(pwm_out[i]),
-            .O(diff_pwm_bufg[i])
-            );
-        ODDR #(
-            .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-            .INIT(1'b0),                     // 初始�???
-            .SRTYPE("SYNC")                  // 同步置位/复位
-        ) ODDR_inst0 (
-            .Q(diff_pwn[i]),     // 输出数据
-            .C(diff_pwm_bufg[i]),       // 时钟输入
-            .CE(1'b1),         // 时钟使能
-            .D1(1'b1),         // 正沿数据
-            .D2(1'b0),         // 负沿数据
-            .R(~rst_n),      // 复位
-            .S(1'b0)           // 置位
-        );
-        OBUFDS obufds_inst (
-     .O (pwm_diff_port_p[i]),  // 宸�鍒嗕俊鍙锋�ｇ��
-     .OB(pwm_diff_port_n[i]), // 宸�鍒嗕俊鍙疯礋绔�
-     .I (       diff_pwn[i])  // 鍗曠��淇″彿杈撳叆
- );
-    end
-endgenerate
-
-
- // ʱ�ӻ����� (��ѡ)
- wire clk_100M_bufg ;
-BUFG bufg_inst_d (
-    .I(clk_100M_o),
-    .O(clk_100M_bufg)
+wire diff_pwm;
+wire diff_pwm_bufg;
+/*          DIFF_PWM1 output            */
+BUFG bufg_inst2 (
+    .I(pwm_out[1]),
+    .O(diff_pwm_bufg)
 );
- // 使用 ODDR 原语保证输出同步
-wire diff_data;
 ODDR #(
     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
     .INIT(1'b0),                     // 初始�???
     .SRTYPE("SYNC")                  // 同步置位/复位
-) ODDR_inst_d (
-    .Q(diff_data),     // 输出数据
+) ODDR_inst2 (
+    .Q(diff_pwm),     // 输出数据
+    .C(diff_pwm_bufg),       // 时钟输入
+    .CE(1'b1),         // 时钟使能
+    .D1(1'b1),         // 正沿数据
+    .D2(1'b0),         // 负沿数据
+    .R(~rst_n),      // 复位
+    .S(1'b0)           // 置位
+);
+ OBUFDS obufds_inst0 (
+     .O(pwm_diff_port_p),  // 差分信号正端
+     .OB(pwm_diff_port_n), // 差分信号负端
+     .I(diff_pwm)     // 单端信号输入
+ );
+
+// 使用 ODDR 原语保证输出同步
+//wire dac_clk;
+//ODDR #(
+//    .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
+//    .INIT(1'b0),                     // 初始�???
+//    .SRTYPE("SYNC")                  // 同步置位/复位
+//) ODDR_inst1 (
+//    .Q(dac_clk),     // 输出数据
+//    .C(clk_100M_o),       // 时钟输入
+//    .CE(1'b1),         // 时钟使能
+//    .D1(1'b1),         // 正沿数据
+//    .D2(1'b0),         // 负沿数据
+//    .R(~rst_n),      // 复位
+//    .S(1'b0)           // 置位
+//);
+wire clk_100M_bufg;
+wire clk_100M_oddr;
+/*       DAC clock output            */
+BUFG bufg_inst1 (
+    .I(clk_100M_o),
+    .O(clk_100M_bufg)
+);
+ODDR #(
+    .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
+    .INIT(1'b0),                     // 初始�???
+    .SRTYPE("SYNC")                  // 同步置位/复位
+) ODDR_inst1 (
+    .Q(clk_100M_oddr),     // 输出数据
     .C(clk_100M_bufg),       // 时钟输入
     .CE(1'b1),         // 时钟使能
     .D1(1'b1),         // 正沿数据
@@ -258,38 +393,61 @@ ODDR #(
     .R(~rst_n),      // 复位
     .S(1'b0)           // 置位
 );
-// 差分输出缓冲�???
-OBUFDS #(
-    // .IOSTANDARD("LVDS_25"),         // I/O 标准
-    .SLEW("SLOW")                   // 控制压摆�???
-) OBUFDS_inst_d (
-    .O(adc_clk_p),          // 差分正端输出
-    .OB(adc_clk_n),         // 差分负端输出
-    .I(diff_data)        // 来自 ODDR 的数�???
+OBUFDS obufds_inst1 (
+   .O(adc_clk_p),  // 差分信号正端
+   .OB(adc_clk_n), // 差分信号负端
+   .I(clk_100M_bufg)     // 单端信号输入
 );
 
+/*          DDS clock output            */
 // 使用 ODDR 原语保证输出同步
 wire dds_clk;
-ODDR #(
-    .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
-    .INIT(1'b0),                     // 初始�????
-    .SRTYPE("SYNC")                  // 同步置位/复位
-) ODDR_inst_c (
-    .Q(dds_clk),     // 输出数据
-    .C(clk_100M_o),       // 时钟输入
-    .CE(1'b1),         // 时钟使能
-    .D1(1'b1),         // 正沿数据
-    .D2(1'b0),         // 负沿数据
-    .R(~rst_n),      // 复位
-    .S(1'b0)           // 置位
-);
-OBUFDS obufds_inst_c (
+wire dds_clk_bufg;
+// BUFG bufg_inst0 (
+//     .I(clk_100M_o),
+//     .O(dds_clk_bufg)
+// );
+// ODDR #(
+//     .DDR_CLK_EDGE("OPPOSITE_EDGE"),  // 双沿输出模式
+//     .INIT(1'b0),                     // 初始�???
+//     .SRTYPE("SYNC")                  // 同步置位/复位
+// ) ODDR_inst0 (
+//     .Q(dds_clk),     // 输出数据
+//     .C(dds_clk_bufg),       // 时钟输入
+//     .CE(1'b1),         // 时钟使能
+//     .D1(1'b1),         // 正沿数据
+//     .D2(1'b0),         // 负沿数据
+//     .R(~rst_n),      // 复位
+//     .S(1'b0)           // 置位
+// );
+
+OBUFDS obufds_inst2 (
     .O(dds_clk0_p),  // 差分信号正端
     .OB(dds_clk0_n), // 差分信号负端
-    .I(dds_clk)     // 单端信号输入
+    .I(clk_50M_o)     // 单端信号输入
 );
-
+// assign pwm_port = pwm_out[0] ; // 直接连接到引�??????????????
+// ila_0 u_ila_0(
+// .clk	(sys_clk),
+// .probe0	({pwm_busy,pwm_oddr})
+// );
+wire Vout_enable;
+assign Vout_enable = pwm_out[_NUM_CHANNELS]; // Enable Vout (active high)
 assign led = ((pwm_busy == 8'h5a)&& (pwm_valid == 8'h5a)) ? 1'b0 : led_breath ; // Example: drive LED with the least significant bit of received data
-// assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�?????????????
-assign uart_re = 1'bZ; // 使能DAC数据输出（低电平有效�?????????????
+assign ad9748_sleep = 1'b0; // 使能AD9748休眠模式（低电平有效�?????????????
+// assign dac_data = 8'h7f; // DAC数据输出（根据需要设置）
+// assign uart_txd = 1'b1; // UART TXD输出（根据需要设置）
+assign debug_uart_tx = Vout_enable ; // Debug UART TXD输出（根据需要设置）
+assign debug_uart_rx = Vout_enable ; // Debug UART RXD输出（根据需要设置）
+ila_0 u_ila_0(
+ .clk	(clk_50M),
+ .probe0	(rev_data5),
+ .probe1	(rev_data0),
+ .probe2	(rev_data1),
+ .probe3	({pack_done,rev_data2[1:0],pwm_valid[1],pwm_out[_NUM_CHANNELS],recv_done}),
+ .probe4	(rev_data4),
+ .probe5	(rev_data7),
+ .probe6	(rev_data6),
+ .probe7	(rev_data3)
+ );
 endmodule

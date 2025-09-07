@@ -1,0 +1,8 @@
+rm ./Artix7_pwm_uart_brd/Artix7_pwm_uart_brd.sim/sim_1/behav/questa/waveform.vcd
+rm ./hsem_s750_uart_pwm/hsem_s750_uart_pwm.sim/sim_1/behav/questa/waveform.vcd
+rm ./prj_lhz_uart_led/.Xil/Vivado-22088-DESKTOP-P9091FN/hw_ila_data_1/zip_work/waveform.vcd
+rm ./prj_lhz_uart_led/.Xil/Vivado-22088-DESKTOP-P9091FN/hw_ila_data_2/zip_work/waveform.vcd
+rm ./prj_lhz_uart_led/prj_lhz_uart_led.sim/sim_1/behav/questa/waveform.vcd
+rm ./prj_lhz_uart_led/prj_lhz_uart_led.sim/sim_1/behav/xsim/waveform.vcd
+rm ./sim/tb/waveform.vcd
+
