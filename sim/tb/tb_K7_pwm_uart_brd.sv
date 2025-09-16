@@ -28,7 +28,7 @@ module tb_K7_pwm_uart_brd();
     wire [7:0] rx_data;
     wire rx_done;
     // 定义仿真控制参数
-    localparam SYS_CLK_PERIOD = 20;    // 100MHz系统时钟
+    localparam SYS_CLK_PERIOD = 10;    // 100MHz系统时钟
     localparam UART_BAUD_RATE  = 115200;
     localparam CLK_FREQ_MHZ    = 50;
     localparam BIT_PERIOD      = 1_000_000_000 / UART_BAUD_RATE; // 单位：ns

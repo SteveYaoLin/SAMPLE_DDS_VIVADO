@@ -386,16 +386,16 @@ crc8 u_crc8 (
 // Modify the pack_data storage logic to include CRC validation
 
 
-//  ila_0 u_ila_1(
-//  .clk	(sys_clk),
-//  .probe0	(crc8_value),
-//  .probe1	(rev_data0),
-//  .probe2	(rev_data1),
-//  .probe3	({pack_done_d0,recv_done,uart_rxd_d0,packdone_flag}),
-//  .probe4	(rev_data4),
-//  .probe5	(rev_data2),
-//  .probe6	(pack_cnt),
-//  .probe7	(rev_data3)
-//  );
+// ila_0 u_ila_1(
+// .clk	(sys_clk),
+// .probe0	(crc8_value),
+// .probe1	(rev_data0),
+// .probe2	(rev_data1),
+// .probe3	({pack_done_d0,recv_done,uart_rxd_d0,packdone_flag}),
+// .probe4	(rev_data4),
+// .probe5	(rev_data2),
+// .probe6	(pack_cnt),
+// .probe7	(rev_data3)
+// );
 
 endmodule	
