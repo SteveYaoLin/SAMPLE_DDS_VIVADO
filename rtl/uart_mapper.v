@@ -69,10 +69,15 @@ always @(posedge clk_50M or negedge rst_n) begin
         // 寄存器初始化
         hs_pwm_ch       <= 8'h00; // 当前通道�?????????
         ls_pwm_ch       <= 8'h00; // 当前通道�?????????
-        ls_ctrl_sta[_NUM_CHANNELS] <= 8'h00;
+
+        for (j = _NUM_CHANNELS; j < (_NUM_CHANNELS + _NUM_SLOW_CH); j = j + 1) begin
+            ls_ctrl_sta[j] <= 8'h00;
+        end
+
+        // ls_ctrl_sta[_NUM_CHANNELS :+ _NUM_SLOW_CH] <= 8'h00;
         // Initialize all channels
 //        integer j;
-       for (j = 0; j < _NUM_CHANNELS; j = j + 1) begin
+       for (j = 0; j < (_NUM_CHANNELS ); j = j + 1) begin
            hs_ctrl_sta[j]      <= 8'h00;
            duty_num[j]         <= 8'h00;
            pulse_dessert[j]    <= 16'h00;
@@ -190,7 +195,17 @@ pattern_ad9748 #(
 //     .dac_data     ( dac_data  )       // DAC数据输出   
 // );
 //hs_ctrl_sta
-assign pwm_out[_NUM_CHANNELS + 0] =  ls_ctrl_sta[_NUM_CHANNELS][0]; // 使用ls_ctrl_sta的bit0作为使能
+generate
+    genvar m;
+    for (m = _NUM_CHANNELS; m < (_NUM_CHANNELS +_NUM_SLOW_CH); m = m + 1) begin : slow_pwm_gen
+        assign pwm_out[m] =  ls_ctrl_sta[m][0]; // 使用ls_ctrl_sta的bit0作为使能
+    end 
+endgenerate
+// for (j = _NUM_CHANNELS; j < (_NUM_CHANNELS + _NUM_SLOW_CH); j = j + 1) begin : slow_pwm_gen
+//     assign pwm_out[j] =  ls_ctrl_sta[j][0]; // 使用ls_ctrl_sta的bit0作为使能
+// end
+// assign pwm_out[_NUM_CHANNELS : (_NUM_CHANNELS + _NUM_SLOW_CH - 1)] =  ls_ctrl_sta[_NUM_CHANNELS :  (_NUM_CHANNELS + _NUM_SLOW_CH - 1)][0]; // 使用ls_ctrl_sta的bit0作为使能
+// assign pwm_out[_NUM_CHANNELS + 0] =  ls_ctrl_sta[_NUM_CHANNELS][0]; // 使用ls_ctrl_sta的bit0作为使能
 
 always @(posedge clk_100M or negedge rst_n) begin
     if (!rst_n) begin

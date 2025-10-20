@@ -1,7 +1,7 @@
 module dds_sample_top # (
     parameter _PAT_WIDTH = 32 ,   // 模式寄存器宽�????????????
     parameter _NUM_CHANNELS = 3,        // �??????????大PWM通道数量
-    parameter _NUM_SLOW_CH = 1, 
+    parameter _NUM_SLOW_CH = 3, 
     parameter CLK_FREQ = 50000000,               //系统时钟频率
     parameter UART_BPS = 115200  ,                //串口波特率
     parameter _DAC_WIDTH = 8      // DAC数据宽度
