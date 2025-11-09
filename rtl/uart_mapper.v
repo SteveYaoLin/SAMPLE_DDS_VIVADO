@@ -241,12 +241,22 @@ always @(posedge clk_100M or negedge rst_n) begin
         end
     end
 end
+
+wire test1 ;
+wire test2 ;
+wire test3 ;
+wire test4 ;
+
+assign test1 = ls_ctrl_sta[5][0];
+assign test2 = pwm_out[4];
+assign AD9516_pd = pwm_out[5];
+// assign test4 = 
 //  ila_0 u_ila_1(
 //   .clk	(clk_50M),
 //   .probe0	(hs_pwm_ch),
 //   .probe1	(ls_pwm_ch),
 //   .probe2	(dac_data),
-//   .probe3	({ls_ctrl_sta[2][0],ls_ctrl_sta[1][0],pwm_busy[2],pack_done}),
+//   .probe3	({test1,test2,AD9516_pd,pack_done}),
 //   .probe4	(PAT[2][7 :0]),
 //   .probe5	(rev_data2),
 //   .probe6	(func_reg),
